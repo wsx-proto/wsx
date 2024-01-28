@@ -1,0 +1,12 @@
+{
+	"targetDefaults": {
+		"check": {
+			"options": {
+				"cwd": "{projectRoot}"
+			}
+		}
+	},
+	"affected": {
+		"defaultBase": "main"
+	}
+}

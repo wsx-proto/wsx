@@ -1,0 +1,7 @@
+{
+	"recommendations": [
+		"EditorConfig.EditorConfig",
+		"biomejs.biome",
+		"nrwl.angular-console"
+	]
+}

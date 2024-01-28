@@ -1,0 +1,38 @@
+{
+	"folders": [
+		{
+			"name": "root",
+			"path": "./"
+		},
+		{
+			"name": "server",
+			"path": "packages/server"
+		},
+		{
+			"name": "router",
+			"path": "packages/router"
+		}
+	],
+	"settings": {
+		// format
+		"editor.formatOnSave": true,
+		"[javascript][typescript][javascriptreact][typescriptreact][json][jsonc]": {
+			"editor.defaultFormatter": "biomejs.biome"
+		},
+		// imports
+		"javascript.updateImportsOnFileMove.enabled": "always",
+		"typescript.updateImportsOnFileMove.enabled": "always",
+		// file nesting
+		"explorer.fileNesting.enabled": true,
+		"explorer.fileNesting.expand": true,
+		// readonly
+		"files.readonlyInclude": {
+			"node_modules/**/": true
+		},
+		"files.readonlyExclude": {
+			"node_modules": true
+		},
+		// typescript
+		"typescript.tsdk": "root/node_modules/typescript/lib"
+	}
+}
