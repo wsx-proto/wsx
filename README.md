@@ -11,4 +11,3 @@ Websocket framework
 - [ ] End-to-end ts
 - [ ] Validation
 - [ ] AsyncAPI documentation
-- [ ] File sending
