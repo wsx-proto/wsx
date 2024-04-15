@@ -1,7 +1,9 @@
 {
 	"targetDefaults": {
 		"check": {
+			"executor": "nx:run-commands",
 			"options": {
+				"command": "biome check --apply src",
 				"cwd": "{projectRoot}"
 			}
 		}

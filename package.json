@@ -1,10 +1,11 @@
 {
-	"name": "wsx",
-	"private": true,
-	"workspaces": ["packages/*"],
-	"devDependencies": {
-		"@biomejs/biome": "^1.5.3",
-		"npm-check-updates": "^16.14.14",
-		"nx": "17.2.1"
-	}
+  "name": "wsx",
+  "private": true,
+  "workspaces": ["apps/*", "libs/*"],
+  "devDependencies": {
+    "@biomejs/biome": "^1.7.0",
+    "@evilmartians/lefthook": "^1.6.10",
+    "npm-check-updates": "^16.14.18",
+    "nx": "18.2.4"
+  }
 }

@@ -1,6 +1,5 @@
 {
 	"install": "always",
-	"target": "semver",
 	"interactive": true,
 	"workspaces": true,
 	"root": true

@@ -5,12 +5,16 @@
 			"path": "./"
 		},
 		{
-			"name": "server",
-			"path": "packages/server"
+			"name": "wsx",
+			"path": "libs/wsx"
 		},
 		{
 			"name": "router",
-			"path": "packages/router"
+			"path": "libs/router"
+		},
+		{
+			"name": "example",
+			"path": "apps/example"
 		}
 	],
 	"settings": {
@@ -18,6 +22,9 @@
 		"editor.formatOnSave": true,
 		"[javascript][typescript][javascriptreact][typescriptreact][json][jsonc]": {
 			"editor.defaultFormatter": "biomejs.biome"
+		},
+		"editor.codeActionsOnSave": {
+			"quickfix.biome": "explicit"
 		},
 		// imports
 		"javascript.updateImportsOnFileMove.enabled": "always",

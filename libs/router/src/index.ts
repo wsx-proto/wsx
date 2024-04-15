@@ -1,5 +1,5 @@
-import { matchRoute, type FindResult } from "./matcher"
-import { cloneNode, createNode, createParamNode, type Node } from "./node"
+import { type FindResult, matchRoute } from "./matcher"
+import { type Node, cloneNode, createNode, createParamNode } from "./node"
 
 export class Router<T> {
 	root: Node<T> | undefined

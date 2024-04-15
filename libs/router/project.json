@@ -3,8 +3,6 @@
 	"projectType": "application",
 	"sourceRoot": "{projectRoot}/src",
 	"targets": {
-		"check": {
-			"command": "biome check --apply src"
-		}
+		"check": {}
 	}
 }

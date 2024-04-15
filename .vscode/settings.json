@@ -1,9 +1,15 @@
 {
 	"explorer.fileNesting.patterns": {
-		"package.json": ".editorconfig, biome.json, tsconfig.json, .npmrc, .gitignore, .gitattributes, bun.lockb, nx.json, .ncurc.json"
+		"package.json": "bun.lockb, bunfig.toml, .ncurc.json",
+		"biome.json": ".editorconfig, .gitattributes"
 	},
 	"files.exclude": {
 		".nx": true
+	},
+	"files.readonlyInclude": {
+		// prevent accidental edits outside workspace
+		"apps/**": true,
+		"libs/**": true
 	},
 	"json.schemas": [
 		{
