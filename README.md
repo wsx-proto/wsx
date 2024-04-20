@@ -2,7 +2,7 @@
 Websocket framework
 
 # Features
-- [ ] Router
+- [x] Router
 - [ ] Plugin system
 - [ ] MessagePack compression
 - [ ] RPC calls

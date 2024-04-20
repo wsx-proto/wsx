@@ -1,7 +1,9 @@
 {
 	"name": "@wsx/router",
-	"module": "index.ts",
 	"type": "module",
+	"exports": {
+		"default": "./src/index.ts"
+	},
 	"devDependencies": {
 		"@types/bun": "latest"
 	},

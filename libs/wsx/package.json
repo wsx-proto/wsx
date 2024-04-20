@@ -1,7 +1,9 @@
 {
   "name": "@wsx/wsx",
-  "module": "src/index.ts",
   "type": "module",
+  "exports": {
+    "default": "./src/index.ts"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },
@@ -9,6 +11,17 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@typeschema/main": "^0.13.9",
+    "@typeschema/typebox": "^0.13.4",
+    "@wsx/router": "workspace:*",
     "elysia": "^1.0.13"
+  },
+	"dependenciesMeta": {
+    "@typeschema/main": {
+      "injected": true
+    },
+    "@typeschema/typebox": {
+      "injected": true
+    }
   }
 }

@@ -1,0 +1,15 @@
+{
+	"$schema": "../../node_modules/nx/schemas/project-schema.json",
+	"name": "example",
+	"projectType": "application",
+	"sourceRoot": "{projectRoot}/src",
+	"targets": {
+		"check": {},
+		"dev": {
+			"command": "bun --inspect src/index.ts",
+			"options": {
+				"cwd": "{projectRoot}"
+			}
+		}
+	}
+}
