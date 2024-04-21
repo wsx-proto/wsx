@@ -1,5 +1,5 @@
 {
-  "name": "@wsx/wsx",
+  "name": "@wsx/server",
   "type": "module",
   "exports": {
     "default": "./src/index.ts"

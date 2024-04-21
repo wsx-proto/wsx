@@ -1,5 +1,5 @@
 {
-  "name": "@wsx/example",
+  "name": "@wsx/client",
   "module": "src/index.ts",
   "type": "module",
   "devDependencies": {
@@ -7,9 +7,5 @@
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
-  },
-	"dependencies": {
-		"@wsx/server": "workspace:*",
-		"@sinclair/typebox": "0.32.22"
-	}
+  }
 }

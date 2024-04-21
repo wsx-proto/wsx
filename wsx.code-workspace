@@ -5,11 +5,19 @@
 			"path": "./"
 		},
 		{
-			"name": "wsx",
-			"path": "libs/wsx"
+			"name": "@wsx/server",
+			"path": "libs/server"
 		},
 		{
-			"name": "router",
+			"name": "@wsx/client",
+			"path": "libs/client"
+		},
+		{
+			"name": "@wsx/shared",
+			"path": "libs/shared"
+		},
+		{
+			"name": "@wsx/router",
 			"path": "libs/router"
 		},
 		{
