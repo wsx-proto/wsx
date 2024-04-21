@@ -5,9 +5,9 @@ Websocket framework
 - [x] Router
 - [ ] Plugin system
 - [ ] MessagePack compression
-- [ ] RPC calls
+- [x] RPC calls
 - [ ] PubSub
 - [ ] Pub broadcasting via Redis Streams
-- [ ] End-to-end ts
-- [ ] Validation
+- [x] End-to-end ts
+- [x] Validation
 - [ ] AsyncAPI documentation

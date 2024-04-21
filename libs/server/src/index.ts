@@ -1,35 +1,25 @@
 import { Elysia, type CreateEden } from "elysia"
 import { Router } from "@wsx/router"
+import {
+	type GenericRequest,
+	actionTypes,
+	type MaybePromise,
+	type RpcResponse,
+} from "@wsx/shared"
 import { type Schema, type Infer, validate } from "@typeschema/main"
 
 export type WsxOptions = Parameters<Elysia["ws"]>[1]
 
-type ActionType = typeof actionTypes
-const actionTypes = {
-	rpc: {
-		request: 1,
-		response: 2,
-	},
-} as const
-
-export type WsxRequest = [
-	action: ActionType["rpc"]["request"],
-	id: number,
-	path: string,
-	body: unknown,
-]
-
-export type WsxResponse = [
-	action: ActionType["rpc"]["response"],
-	id: number,
-	body: unknown,
-]
-
 export type RoutesBase = Record<string, unknown>
 
-type RPCHandler<Body = unknown, Response = unknown> = (
-	body: Body,
-) => Response | Promise<Response>
+type RPCHandler<
+	Body = unknown,
+	Response = unknown,
+	Params = unknown,
+> = (request: {
+	body: Body
+	params: Params
+}) => MaybePromise<Response>
 type RPCRoute = {
 	handler: RPCHandler
 } & RPCOptions
@@ -38,15 +28,16 @@ type GenericRoute = RPCRoute
 type RPCOptions = {
 	body?: Schema
 	response?: Schema
+	params?: Schema
 }
 
 export class Wsx<
 	const in out BasePath extends string = "",
-	// biome-ignore lint/complexity/noBannedTypes: better type hints
 	const out Routes extends RoutesBase = {},
 > {
 	plugin: Elysia
 	router: Router<GenericRoute>
+	_routes: Routes = {} as Routes
 
 	constructor(options?: WsxOptions) {
 		this.plugin = new Elysia()
@@ -64,7 +55,7 @@ export class Wsx<
 					options.message(ws, message)
 				}
 
-				const request: WsxRequest = JSON.parse(message as string)
+				const request: GenericRequest = JSON.parse(message as string)
 				const [action] = request
 				if (action === actionTypes.rpc.request) {
 					const [, id, path, body] = request
@@ -73,8 +64,9 @@ export class Wsx<
 						//todo
 						return
 					}
+					const { params, store } = route
 
-					const { body: bodySchema } = route.store
+					const { body: bodySchema } = store
 					if (bodySchema) {
 						const validationResult = await validate(bodySchema, body)
 						if (!validationResult.success) {
@@ -83,12 +75,17 @@ export class Wsx<
 						}
 					}
 
-					const rawResponse = route.store.handler(body)
+					const rawResponse = store.handler({ body, params })
 					const response = isPromise(rawResponse)
 						? await rawResponse
 						: rawResponse
 
-					ws.send([actionTypes.rpc.response, id, response])
+					const rpcResponse: RpcResponse = [
+						actionTypes.rpc.response,
+						id,
+						response,
+					]
+					ws.send(rpcResponse)
 				}
 			},
 			close(ws, code, message) {
@@ -103,17 +100,24 @@ export class Wsx<
 		return this.plugin.handle
 	}
 
-	get listen() {
-		return this.plugin.listen.bind(this.plugin)
+	listen(...options: Parameters<Elysia["listen"]>) {
+		this.plugin.listen(...options)
+		return this
 	}
 
 	rpc<
 		const Path extends string,
 		Options extends RPCOptions,
-		Payload = Options["body"] extends Schema ? Infer<Options["body"]> : unknown,
+		Body = Options["body"] extends Schema ? Infer<Options["body"]> : unknown,
+		Response = Options["response"] extends Schema
+			? Infer<Options["response"]>
+			: unknown,
+		Params = Options["params"] extends Schema
+			? Infer<Options["params"]>
+			: unknown,
 	>(
 		path: Path,
-		handler: (message: Payload) => void,
+		handler: RPCHandler<Body, Response, Params>,
 		options?: Options,
 	): Wsx<
 		BasePath,
@@ -121,8 +125,10 @@ export class Wsx<
 			CreateEden<
 				`${BasePath}${Path extends "/" ? "/index" : Path}`,
 				{
-					message: {
-						payload: Payload
+					rpc: {
+						body: Body
+						response: Response
+						params: Params
 					}
 				}
 			>
@@ -132,7 +138,6 @@ export class Wsx<
 			body: options?.body,
 			response: options?.response,
 		})
-		// biome-ignore lint/suspicious/noExplicitAny: ts is limited
 		return this as any
 	}
 }
