@@ -5,14 +5,14 @@
 	"sourceRoot": "{projectRoot}/src",
 	"targets": {
 		"check": {},
-		"serve": {
-			"command": "bun --inspect src/index.ts",
+		"run": {
+			"command": "bun src/index.ts",
 			"options": {
 				"cwd": "{projectRoot}"
 			}
 		},
-		"send": {
-			"command": "bun --inspect src/client.ts",
+		"dev": {
+			"command": "bun --inspect-wait src/index.ts",
 			"options": {
 				"cwd": "{projectRoot}"
 			}
