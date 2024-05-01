@@ -1,5 +1,5 @@
-import type { app } from "./index"
 import { Client } from "@wsx/client"
+import type { app } from "./index"
 
 import readline from "node:readline"
 

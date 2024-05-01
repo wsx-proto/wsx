@@ -10,7 +10,7 @@
   },
 	"dependencies": {
 		"@wsx/server": "workspace:*",
-		"@sinclair/typebox": "0.32.22",
+		"@sinclair/typebox": "0.32.27",
 		"@wsx/client": "workspace:*"
 	}
 }

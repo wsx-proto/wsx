@@ -1,6 +1,6 @@
-import { Wsx } from "@wsx/server"
 import { Type } from "@sinclair/typebox"
 import { Client } from "@wsx/client"
+import { Wsx } from "@wsx/server"
 
 const port = 3000
 export const app = new Wsx()
