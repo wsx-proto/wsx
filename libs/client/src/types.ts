@@ -1,6 +1,6 @@
 /// <reference lib="dom" />
 import type { Wsx } from "@wsx/server"
-import type { Prettify } from "@wsx/shared"
+import type { IsNever, Prettify } from "@wsx/shared"
 import type { MaybeArray } from "@wsx/shared"
 
 export namespace ClientNs {
@@ -12,7 +12,7 @@ export namespace ClientNs {
 
 	export type Sign<in out Route extends Record<string, any>> = {
 		[K in keyof Route as K extends `:${string}`
-			? string
+			? never
 			: K]: Route[K] extends {
 			body: infer Body
 			response: infer Response
@@ -27,9 +27,12 @@ export namespace ClientNs {
 	type CreateParams<Route extends Record<string, any>> = Extract<
 		keyof Route,
 		`:${string}`
-	> extends string
+	> extends infer Path extends string ? IsNever<Path> extends true
 		? Prettify<Sign<Route>>
-		: never
+		: Prettify<Sign<Route>> & { [K in Path as K extends `:${infer T}`
+		? T
+		: K]: (value: string | number) => CreateParams<Route[K]>}
+		:never
 
 	export interface Config {
 		headers?: MaybeArray<

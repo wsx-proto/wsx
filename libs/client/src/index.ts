@@ -5,6 +5,7 @@ export type { ClientNs as ClientType }
 import { processHeaders } from "./utils"
 import { actionTypes, type GenericResponse, type RpcRequest } from "@wsx/shared"
 
+type Method = typeof methods[number]
 const methods = ["rpc"] as const
 
 const locals = ["localhost", "127.0.0.1", "0.0.0.0"]
@@ -39,6 +40,21 @@ const RoutingProxy = (
 			)
 		},
 		apply(_, __, [body, options]) {
+			// path params
+			if (body && !options) {
+				const bodyType = typeof body
+				if (bodyType === 'string' || bodyType === 'number') {
+					if (!methods.includes(paths.at(-1) as Method)) {
+						return RoutingProxy(
+							ws,
+							store,
+							config,
+							[...paths.slice(0,-1), String(body)],
+					)
+					}
+				}
+			}
+
 			const methodPaths = [...paths]
 			const method = methodPaths.pop()
 			const path = `/${methodPaths.join("/")}`
