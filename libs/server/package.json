@@ -15,7 +15,7 @@
     "@typeschema/typebox": "^0.13.4",
     "@wsx/router": "workspace:*",
 		"@wsx/shared": "workspace:*",
-    "elysia": "^1.0.15"
+    "elysia": "^1.0.16"
   },
 	"dependenciesMeta": {
     "@typeschema/main": {

@@ -3,9 +3,9 @@
   "private": true,
   "workspaces": ["apps/*", "libs/*"],
   "devDependencies": {
-    "@biomejs/biome": "^1.7.2",
+    "@biomejs/biome": "^1.7.3",
     "@evilmartians/lefthook": "^1.6.10",
     "npm-check-updates": "^16.14.20",
-    "nx": "18.3.4"
+    "nx": "19.0.1"
   }
 }
