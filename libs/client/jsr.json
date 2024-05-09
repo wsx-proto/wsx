@@ -1,9 +1,9 @@
 {
 	"name": "@wsx/client",
-	"version": "0.0.2",
+	"version": "0.0.3",
 	"exports": "./src/index.ts",
 	"imports": {
-		"@wsx/shared": "jsr:@wsx/shared@0.0.2",
-		"@wsx/server": "jsr:@wsx/server@0.0.2"
+		"@wsx/shared": "jsr:@wsx/shared@0.0.3",
+		"@wsx/server": "jsr:@wsx/server@0.0.3"
 	}
 }
