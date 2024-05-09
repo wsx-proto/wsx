@@ -17,10 +17,6 @@
 			"path": "libs/shared"
 		},
 		{
-			"name": "@wsx/router",
-			"path": "libs/router"
-		},
-		{
 			"name": "example",
 			"path": "apps/example"
 		}
