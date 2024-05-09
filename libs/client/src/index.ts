@@ -2,11 +2,10 @@ import type { Wsx } from "@wsx/server"
 import type { ClientNs } from "./types"
 export type { ClientNs as ClientType }
 
-import { processHeaders } from "./utils"
 import { actionTypes, type GenericResponse, type RpcRequest } from "@wsx/shared"
 
-type Method = typeof methods[number]
-const methods = ["rpc"] as const
+type Method = (typeof methods)[number]
+const methods = ["call", "send", "listen"] as const
 
 const locals = ["localhost", "127.0.0.1", "0.0.0.0"]
 
@@ -40,40 +39,33 @@ const RoutingProxy = (
 			)
 		},
 		apply(_, __, [body, options]) {
-			// path params
-			if (body && !options) {
-				const bodyType = typeof body
-				if (bodyType === 'string' || bodyType === 'number') {
-					if (!methods.includes(paths.at(-1) as Method)) {
-						return RoutingProxy(
-							ws,
-							store,
-							config,
-							[...paths.slice(0,-1), String(body)],
-					)
-					}
-				}
-			}
-
 			const methodPaths = [...paths]
-			const method = methodPaths.pop()
+			const method = methodPaths.pop() as Method
 			const path = `/${methodPaths.join("/")}`
 
-			let { headers } = config
-
-			headers = processHeaders(headers, path, options)
-
-			if (method === "rpc") {
-				const id = store.id++
-				const rpcRequest: RpcRequest = [actionTypes.rpc.request, id, path, body]
-				ws.send(JSON.stringify(rpcRequest))
-				let resolve: Resolve
-				const responsePromise = new Promise((innerResolve) => {
-					resolve = innerResolve
-				})
-				store.resolvers.set(id, resolve!)
-				return responsePromise
+			if (method === "listen") {
+				// todo
+				return
 			}
+
+			const id = store.id++
+			const withResponse = method === "call"
+			const rpcRequest: RpcRequest = [
+				actionTypes.rpc.request,
+				id,
+				path,
+				withResponse,
+				body,
+			]
+			ws.send(JSON.stringify(rpcRequest))
+
+			if (!withResponse) return
+			let resolve: Resolve
+			const responsePromise = new Promise((innerResolve) => {
+				resolve = innerResolve
+			})
+			store.resolvers.set(id, resolve!)
+			return responsePromise
 		},
 	}) as any
 
@@ -105,7 +97,7 @@ export const Client = <
 				const [, id, body] = response
 				const resolve = store.resolvers.get(id)
 				if (!resolve) {
-					//todo
+					console.error("No resolver for call", id)
 					return
 				}
 				resolve(body)

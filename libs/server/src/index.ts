@@ -6,19 +6,19 @@ import {
 	type MaybePromise,
 	type RpcResponse,
 } from "@wsx/shared"
-import { type Schema, type Infer, validate } from "@typeschema/main"
+import {
+	type Schema as AnySchema,
+	type Infer,
+	validate,
+} from "@typeschema/main"
 
 export type WsxOptions = Parameters<Elysia["ws"]>[1]
 
 export type RoutesBase = Record<string, unknown>
+export type DeclarationsBase = Record<string, unknown>
 
-type RPCHandler<
-	Body = unknown,
-	Response = unknown,
-	Params = unknown,
-> = (request: {
+type RPCHandler<Body = unknown, Response = unknown> = (request: {
 	body: Body
-	params: Params
 }) => MaybePromise<Response>
 type RPCRoute = {
 	handler: RPCHandler
@@ -26,18 +26,22 @@ type RPCRoute = {
 type GenericRoute = RPCRoute
 
 type RPCOptions = {
-	body?: Schema
-	response?: Schema
-	params?: Schema
+	body?: AnySchema
+	response?: AnySchema
 }
 
 export class Wsx<
 	const in out BasePath extends string = "",
 	const out Routes extends RoutesBase = {},
+	const out Declarations extends DeclarationsBase = {},
 > {
 	plugin: Elysia
+
 	router: Router<GenericRoute>
 	_routes: Routes = {} as Routes
+
+	declarations: Map<string, AnySchema> = new Map()
+	_declarations: Declarations = {} as Declarations
 
 	constructor(options?: WsxOptions) {
 		this.plugin = new Elysia()
@@ -58,13 +62,13 @@ export class Wsx<
 				const request: GenericRequest = JSON.parse(message as string)
 				const [action] = request
 				if (action === actionTypes.rpc.request) {
-					const [, id, path, body] = request
+					const [, id, path, withResponse, body] = request
 					const route = this.router.find(path)
 					if (!route) {
 						//todo
 						return
 					}
-					const { params, store } = route
+					const { store } = route
 
 					const { body: bodySchema } = store
 					if (bodySchema) {
@@ -75,7 +79,8 @@ export class Wsx<
 						}
 					}
 
-					const rawResponse = store.handler({ body, params })
+					const rawResponse = store.handler({ body })
+					if (!withResponse) return
 					const response = isPromise(rawResponse)
 						? await rawResponse
 						: rawResponse
@@ -105,19 +110,18 @@ export class Wsx<
 		return this
 	}
 
-	rpc<
+	route<
 		const Path extends string,
 		Options extends RPCOptions,
-		Body = Options["body"] extends Schema ? Infer<Options["body"]> : unknown,
-		Response = Options["response"] extends Schema
-			? Infer<Options["response"]>
+		Body extends Options["body"] extends AnySchema
+			? Infer<Options["body"]>
 			: unknown,
-		Params = Options["params"] extends Schema
-			? Infer<Options["params"]>
+		Response extends Options["response"] extends AnySchema
+			? Infer<Options["response"]>
 			: unknown,
 	>(
 		path: Path,
-		handler: RPCHandler<Body, Response, Params>,
+		handler: RPCHandler<Body, Response>,
 		options?: Options,
 	): Wsx<
 		BasePath,
@@ -125,19 +129,28 @@ export class Wsx<
 			CreateEden<
 				`${BasePath}${Path extends "/" ? "/index" : Path}`,
 				{
-					rpc: {
-						body: Body
-						response: Response
-						params: Params
-					}
+					body: Body
+					response: Response
 				}
-			>
+			>,
+		Declarations
 	> {
 		this.router.add(path, {
 			handler: handler as RPCHandler,
 			body: options?.body,
 			response: options?.response,
 		})
+		return this as any
+	}
+
+	/**
+	 * Declare a server-send events
+	 */
+	event<const Path extends string, Schema extends AnySchema>(
+		path: Path,
+		schema: Schema,
+	): Wsx<BasePath, Routes, Declarations & { [Key in Path]: Infer<Schema> }> {
+		this.declarations.set(path, schema)
 		return this as any
 	}
 }

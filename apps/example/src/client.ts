@@ -11,6 +11,6 @@ const rl = readline.createInterface({
 })
 
 rl.question("Send?", async (name) => {
-	const response = await client.hi.rpc({ number: 5 })
+	const response = await client.hi.call({ number: 5 })
 	console.info(response)
 })

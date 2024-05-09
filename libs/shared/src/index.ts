@@ -17,6 +17,7 @@ export type RpcRequest = [
 	action: ActionType["rpc"]["request"],
 	id: number,
 	path: string,
+	withResponse: boolean,
 	body: unknown,
 ]
 

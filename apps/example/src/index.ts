@@ -4,35 +4,31 @@ import { Wsx } from "@wsx/server"
 
 const port = 3000
 export const app = new Wsx()
-	.rpc(
-		"/hi",
+	.event("/lol", Type.Object({ lol: Type.String() }))
+	.route(
+		"/user/create",
 		({ body }) => {
-			console.log("hi", body)
-			return "hi"
+			console.log("create user", body)
+			return "user created"
 		},
 		{
-			body: Type.Object({ number: Type.Number() }),
+			body: Type.Object({ name: Type.String() }),
+			response: Type.String(),
 		},
 	)
-	.rpc("/hi/:id/bye/:name", ({ params }) => params, {
-		params: Type.Object({ id: Type.String(), name: Type.String() }),
+	.route("/user/get", ({ body: { id } }) => console.log(id), {
+		body: Type.Object({ id: Type.String() }),
 	})
-	.rpc("/hi/world", () => console.log("hi world"))
+	.route("/user/ping", () => {
+		console.log("ping")
+	})
+	.route("/user/company/list", () => {})
 	.listen(port)
 
 console.info("Server started", { port })
 
-const client = await Client<typeof app>("localhost:3000")
-const r1 = await client.hi.rpc({ number: 5 })
+const { user } = await Client<typeof app>(`localhost:${port}`)
+const r1 = await user.create.call({ name: "Andrii" })
 console.info(r1)
 
-const r2 = await client.hi.id(5).bye.name("c").rpc()
-console.info(r2)
-
-// import readline from "node:readline"
-// const rl = readline.createInterface({
-// 	input: process.stdin,
-// 	output: process.stdout,
-// })
-
-// rl.question("Send?", async (name) => {})
+user.ping.emit()
