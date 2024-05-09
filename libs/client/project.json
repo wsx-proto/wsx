@@ -1,0 +1,12 @@
+{
+	"$schema": "../../node_modules/nx/schemas/project-schema.json",
+	"name": "@wsx/client",
+	"projectType": "library",
+	"sourceRoot": "{projectRoot}/src",
+	"targets": {
+		"check": {},
+		"publish": {
+			"dependsOn": ["@wsx/shared:publish"]
+		}
+	}
+}

@@ -1,9 +1,9 @@
 {
-	"name": "@wsx/server",
+	"name": "@wsx/client",
 	"version": "0.0.2",
 	"exports": "./src/index.ts",
 	"imports": {
 		"@wsx/shared": "jsr:@wsx/shared@0.0.2",
-		"bun": "npm:@types/bun@latest"
+		"@wsx/server": "jsr:@wsx/server@0.0.2"
 	}
 }
