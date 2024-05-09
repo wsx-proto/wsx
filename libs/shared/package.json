@@ -1,9 +1,7 @@
 {
   "name": "@wsx/shared",
   "type": "module",
-	"exports": {
-		"default": "./src/index.ts"
-	},
+	"exports": "./src/index.ts",
 	"dependencies": {
 		"@typeschema/main": "^0.13.9"
 	},

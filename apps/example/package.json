@@ -11,6 +11,7 @@
 	"dependencies": {
 		"@wsx/server": "workspace:*",
 		"@sinclair/typebox": "0.32.29",
+		"@typeschema/typebox": "^0.13.4",
 		"@wsx/client": "workspace:*"
 	}
 }
