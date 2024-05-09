@@ -2,7 +2,7 @@ import type { Wsx } from "@wsx/server"
 import type { ClientNs } from "./types"
 export type { ClientNs as ClientType }
 
-import { actionTypes, type GenericResponse, type RpcRequest } from "@wsx/shared"
+import { Proto } from "@wsx/shared"
 
 type Method = (typeof methods)[number]
 const methods = ["call", "send", "listen"] as const
@@ -50,8 +50,8 @@ const RoutingProxy = (
 
 			const id = store.id++
 			const withResponse = method === "call"
-			const rpcRequest: RpcRequest = [
-				actionTypes.rpc.request,
+			const rpcRequest: Proto.RpcRequest = [
+				Proto.actionTypes.rpc.request,
 				id,
 				path,
 				withResponse,
@@ -91,9 +91,9 @@ export const Client = <
 		})
 
 		ws.addEventListener("message", ({ data }) => {
-			const response = JSON.parse(data) as GenericResponse
+			const response = JSON.parse(data) as Proto.GenericResponse
 			const [action] = response
-			if (action === actionTypes.rpc.response) {
+			if (action === Proto.actionTypes.rpc.response) {
 				const [, id, body] = response
 				const resolve = store.resolvers.get(id)
 				if (!resolve) {

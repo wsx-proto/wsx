@@ -4,7 +4,10 @@ import { Wsx } from "@wsx/server"
 
 const port = 3000
 export const app = new Wsx()
-	.event("/lol", Type.Object({ lol: Type.String() }))
+	.event("/user/notify", {
+		body: Type.Object({ lol: Type.String() }),
+		response: Type.String(),
+	})
 	.route(
 		"/user/create",
 		({ body }) => {
@@ -27,8 +30,15 @@ export const app = new Wsx()
 
 console.info("Server started", { port })
 
-const { user } = await Client<typeof app>(`localhost:${port}`)
-const r1 = await user.create.call({ name: "Andrii" })
+const client = await Client<typeof app>(`localhost:${port}`)
+const r1 = await client.user.create.call({ name: "Andrii" })
 console.info(r1)
 
-user.ping.emit()
+client.user.ping.emit()
+
+const notifyListener = client.user.notify.listen(() => {
+	console.log("notified")
+	return "ok"
+})
+
+// notifyListener.close()

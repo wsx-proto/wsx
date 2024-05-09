@@ -1,10 +1,10 @@
 import { Elysia, type CreateEden } from "elysia"
-import { Router } from "@wsx/router"
 import {
-	type GenericRequest,
-	actionTypes,
+	Proto,
 	type MaybePromise,
-	type RpcResponse,
+	type RPCHandler,
+	type RPCOptions,
+	type RPCRoute,
 } from "@wsx/shared"
 import {
 	type Schema as AnySchema,
@@ -15,37 +15,23 @@ import {
 export type WsxOptions = Parameters<Elysia["ws"]>[1]
 
 export type RoutesBase = Record<string, unknown>
-export type DeclarationsBase = Record<string, unknown>
-
-type RPCHandler<Body = unknown, Response = unknown> = (request: {
-	body: Body
-}) => MaybePromise<Response>
-type RPCRoute = {
-	handler: RPCHandler
-} & RPCOptions
-type GenericRoute = RPCRoute
-
-type RPCOptions = {
-	body?: AnySchema
-	response?: AnySchema
-}
+export type EventBase = Record<string, unknown>
 
 export class Wsx<
 	const in out BasePath extends string = "",
 	const out Routes extends RoutesBase = {},
-	const out Declarations extends DeclarationsBase = {},
+	const out Events extends EventBase = {},
 > {
 	plugin: Elysia
 
-	router: Router<GenericRoute>
-	_routes: Routes = {} as Routes
+	router: Map<string, RPCRoute> = new Map()
+	$routes: Routes = {} as Routes
 
-	declarations: Map<string, AnySchema> = new Map()
-	_declarations: Declarations = {} as Declarations
+	events: Map<string, RPCOptions> = new Map()
+	$events: Events = {} as Events
 
 	constructor(options?: WsxOptions) {
 		this.plugin = new Elysia()
-		this.router = new Router()
 
 		this.plugin.ws("", {
 			...options,
@@ -59,18 +45,17 @@ export class Wsx<
 					options.message(ws, message)
 				}
 
-				const request: GenericRequest = JSON.parse(message as string)
+				const request: Proto.GenericRequest = JSON.parse(message as string)
 				const [action] = request
-				if (action === actionTypes.rpc.request) {
+				if (action === Proto.actionTypes.rpc.request) {
 					const [, id, path, withResponse, body] = request
-					const route = this.router.find(path)
+					const route = this.router.get(path)
 					if (!route) {
 						//todo
 						return
 					}
-					const { store } = route
 
-					const { body: bodySchema } = store
+					const { body: bodySchema } = route
 					if (bodySchema) {
 						const validationResult = await validate(bodySchema, body)
 						if (!validationResult.success) {
@@ -79,14 +64,14 @@ export class Wsx<
 						}
 					}
 
-					const rawResponse = store.handler({ body })
+					const rawResponse = route.handler({ body })
 					if (!withResponse) return
 					const response = isPromise(rawResponse)
 						? await rawResponse
 						: rawResponse
 
-					const rpcResponse: RpcResponse = [
-						actionTypes.rpc.response,
+					const rpcResponse: Proto.RpcResponse = [
+						Proto.actionTypes.rpc.response,
 						id,
 						response,
 					]
@@ -119,23 +104,20 @@ export class Wsx<
 		Response extends Options["response"] extends AnySchema
 			? Infer<Options["response"]>
 			: unknown,
+		Eden = CreateEden<
+			`${BasePath}${Path extends "/" ? "/index" : Path}`,
+			{
+				$type: "route"
+				$body: Body
+				$response: Response
+			}
+		>,
 	>(
 		path: Path,
 		handler: RPCHandler<Body, Response>,
 		options?: Options,
-	): Wsx<
-		BasePath,
-		Routes &
-			CreateEden<
-				`${BasePath}${Path extends "/" ? "/index" : Path}`,
-				{
-					body: Body
-					response: Response
-				}
-			>,
-		Declarations
-	> {
-		this.router.add(path, {
+	): Wsx<BasePath, Routes & Eden, Events> {
+		this.router.set(path, {
 			handler: handler as RPCHandler,
 			body: options?.body,
 			response: options?.response,
@@ -146,11 +128,25 @@ export class Wsx<
 	/**
 	 * Declare a server-send events
 	 */
-	event<const Path extends string, Schema extends AnySchema>(
-		path: Path,
-		schema: Schema,
-	): Wsx<BasePath, Routes, Declarations & { [Key in Path]: Infer<Schema> }> {
-		this.declarations.set(path, schema)
+	event<
+		const Path extends string,
+		Options extends RPCOptions,
+		Body extends Options["body"] extends AnySchema
+			? Infer<Options["body"]>
+			: unknown,
+		Response extends Options["response"] extends AnySchema
+			? Infer<Options["response"]>
+			: unknown,
+		Eden = CreateEden<
+			`${BasePath}${Path extends "/" ? "/index" : Path}`,
+			{
+				$type: "event"
+				$body: Body
+				$response: Response
+			}
+		>,
+	>(path: Path, options: Options): Wsx<BasePath, Routes & Eden, Events & Eden> {
+		this.events.set(path, options)
 		return this as any
 	}
 }

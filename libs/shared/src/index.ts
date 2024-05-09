@@ -1,33 +1,28 @@
+import type { MaybePromise } from "./utility-types"
+
 export * from "./utility-types"
+export * as Proto from "./proto"
+import type { Schema as AnySchema } from "@typeschema/main"
 
-export type ActionType = typeof actionTypes
-export const actionTypes = {
-	rpc: {
-		request: 1,
-		response: 2,
-	},
-} as const
+export type RPCHandler<Body = unknown, Response = unknown> = (request: {
+	body: Body
+}) => MaybePromise<Response>
 
-/**
- * From client to server
- */
-export type GenericRequest = RpcRequest
+export type RPCRoute = {
+	handler: RPCHandler
+} & RPCOptions
 
-export type RpcRequest = [
-	action: ActionType["rpc"]["request"],
-	id: number,
-	path: string,
-	withResponse: boolean,
-	body: unknown,
-]
+export type RPCOptions = {
+	body?: AnySchema
+	response?: AnySchema
+}
 
-/**
- * From server to client
- */
-export type GenericResponse = RpcResponse
-
-export type RpcResponse = [
-	action: ActionType["rpc"]["response"],
-	id: number,
-	body: unknown,
-]
+export type RpcResponse<Response = unknown> =
+	| {
+			data: Response
+			error?: undefined
+	  }
+	| {
+			data?: undefined
+			error: unknown
+	  }

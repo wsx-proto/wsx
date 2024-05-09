@@ -4,10 +4,18 @@
 	"exports": {
 		"default": "./src/index.ts"
 	},
+	"dependencies": {
+		"@typeschema/main": "^0.13.9"
+	},
   "devDependencies": {
     "@types/bun": "latest"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
+  },
+	"dependenciesMeta": {
+    "@typeschema/main": {
+      "injected": true
+    }
   }
 }
