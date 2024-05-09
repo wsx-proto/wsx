@@ -1,4 +1,3 @@
-/// <reference lib="dom" />
 import type { Wsx } from "@wsx/server"
 import type { Prettify, RPCHandler, RpcResponse } from "@wsx/shared"
 
