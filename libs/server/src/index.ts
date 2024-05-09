@@ -84,11 +84,11 @@ export class Wsx<
 		})
 	}
 
-	get handle() {
+	get handle(): Elysia["handle"] {
 		return this.plugin.handle
 	}
 
-	listen(...options: Parameters<Elysia["listen"]>) {
+	listen(...options: Parameters<Elysia["listen"]>): this {
 		this.plugin.listen(...options)
 		return this
 	}
