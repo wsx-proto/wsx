@@ -4,9 +4,10 @@ export * from "./utility-types"
 export * as Proto from "./proto"
 import type { Schema as AnySchema } from "@typeschema/main"
 
-export type RPCHandler<Body = unknown, Response = unknown> = (request: {
-	body: Body
-}) => MaybePromise<Response>
+export type RPCHandler<
+	Request extends { body: any; ws: any } = { body: unknown; ws: unknown },
+	Response = unknown,
+> = (request: Request) => MaybePromise<Response>
 
 export type RPCRoute = {
 	handler: RPCHandler

@@ -20,6 +20,10 @@ class Store {
 	 * resolvers for requests promises
 	 */
 	resolvers: Map<number, Resolve> = new Map()
+	/**
+	 * listeners for server-sent events
+	 */
+	listeners: Map<string, EventTarget> = new Map()
 }
 
 const RoutingProxy = (
@@ -44,8 +48,16 @@ const RoutingProxy = (
 			const path = `/${methodPaths.join("/")}`
 
 			if (method === "listen") {
-				// todo
-				return
+				let emitter = store.listeners.get(path)
+				if (!emitter) {
+					emitter = new EventTarget()
+				}
+				emitter.addEventListener("message", body) // body is a handler ¯\_(ツ)_/¯
+				return {
+					remove() {
+						emitter.removeEventListener("message", body)
+					},
+				}
 			}
 
 			const id = store.id++

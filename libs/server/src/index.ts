@@ -1,7 +1,6 @@
 import { Elysia, type CreateEden } from "elysia"
 import {
 	Proto,
-	type MaybePromise,
 	type RPCHandler,
 	type RPCOptions,
 	type RPCRoute,
@@ -11,6 +10,8 @@ import {
 	type Infer,
 	validate,
 } from "@typeschema/main"
+import type { ElysiaWS } from "elysia/ws"
+import type { ServerWebSocket } from "bun"
 
 export type WsxOptions = Parameters<Elysia["ws"]>[1]
 
@@ -25,10 +26,7 @@ export class Wsx<
 	plugin: Elysia
 
 	router: Map<string, RPCRoute> = new Map()
-	$routes: Routes = {} as Routes
-
 	events: Map<string, RPCOptions> = new Map()
-	$events: Events = {} as Events
 
 	constructor(options?: WsxOptions) {
 		this.plugin = new Elysia()
@@ -64,7 +62,7 @@ export class Wsx<
 						}
 					}
 
-					const rawResponse = route.handler({ body })
+					const rawResponse = route.handler({ ws, body })
 					if (!withResponse) return
 					const response = isPromise(rawResponse)
 						? await rawResponse
@@ -114,7 +112,7 @@ export class Wsx<
 		>,
 	>(
 		path: Path,
-		handler: RPCHandler<Body, Response>,
+		handler: RPCHandler<{ body: Body; ws: ServerWs; events: Events }, Response>,
 		options?: Options,
 	): Wsx<BasePath, Routes & Eden, Events> {
 		this.router.set(path, {
@@ -126,7 +124,7 @@ export class Wsx<
 	}
 
 	/**
-	 * Declare a server-send events
+	 * Declare a server-sent events
 	 */
 	event<
 		const Path extends string,
@@ -145,11 +143,16 @@ export class Wsx<
 				$response: Response
 			}
 		>,
-	>(path: Path, options: Options): Wsx<BasePath, Routes & Eden, Events & Eden> {
-		this.events.set(path, options)
+	>(path: Path, options?: Options): Wsx<BasePath, Routes, Events & Eden> {
+		this.events.set(path, options ?? {})
 		return this as any
 	}
 }
+
+type ServerWs = Pick<
+	ElysiaWS<ServerWebSocket<{}>>,
+	"id" | "data" | "close" | "terminate" | "cork" | "remoteAddress"
+>
 
 function isObject(x: unknown): x is object {
 	return x !== null && typeof x === "object"
