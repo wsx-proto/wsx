@@ -118,7 +118,7 @@ export const Client = <
 	})
 }
 
-function fixDomain(domain: string) {
+function fixDomain(domain: string): string {
 	if (!domain.includes("://"))
 		domain =
 			(locals.find((v) => (domain as string).includes(v))
