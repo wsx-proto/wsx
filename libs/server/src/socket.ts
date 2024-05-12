@@ -17,7 +17,7 @@ export class WsxSocket<Ws extends WsxRawSocket = WsxRawSocket> {
 		}
 	}
 
-	get id() {
+	get id(): string {
 		return this.raw.data[idSymbol]!
 	}
 
@@ -25,7 +25,7 @@ export class WsxSocket<Ws extends WsxRawSocket = WsxRawSocket> {
 		this.raw.data[idSymbol] = value
 	}
 
-	[sendSymbol](data: unknown) {
+	[sendSymbol](data: unknown): void {
 		if (Buffer.isBuffer(data)) {
 			this.raw.send(data)
 			return
