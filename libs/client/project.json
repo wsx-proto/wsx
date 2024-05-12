@@ -6,7 +6,7 @@
 	"targets": {
 		"check": {},
 		"publish": {
-			"dependsOn": ["@wsx/shared:publish"]
+			"dependsOn": ["@wsx/shared:publish", "@wsx/server:publish"]
 		}
 	}
 }
