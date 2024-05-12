@@ -125,7 +125,10 @@ export class Wsx<
 	listen(
 		port: number,
 		options?: Omit<Serve, "port" | "fetch" | "websocket"> & {
-			httpHandler?: (request: Request) => MaybePromise<Response>
+			/**
+			 * Mount a custom handler for non-wsx requests
+			 */
+			fallback?: (request: Request) => MaybePromise<Response>
 		},
 	): this {
 		const websocket = this.attach()
@@ -135,7 +138,7 @@ export class Wsx<
 			fetch(request, server) {
 				const success = websocket.upgrade(server, request)
 				if (!success) {
-					options?.httpHandler?.(request)
+					options?.fallback?.(request)
 				}
 			},
 			websocket,
