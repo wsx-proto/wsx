@@ -11,17 +11,78 @@ import {
 	type ServerRpcHandler,
 	isPromise,
 } from "@wsx/shared"
-import { type CreateEden, Elysia } from "elysia"
 import { RoutingProxy, Store } from "./proxy"
-import type { ServerNs, ServerWs } from "./types"
+import type { ConsumeTyping, PrepareTyping } from "./types"
+
+import type { ServerWebSocket, WebSocketHandler } from "bun"
+import { WsxSocket, idSymbol, sendSymbol } from "./socket"
+export { WsxSocket } from "./socket"
 
 /**
  * Options for WSX server
  */
-export type WsxOptions = Parameters<Elysia["ws"]>[1]
+export type WsxOptions = {}
+
+export type AnyWsx = Wsx<any, any, any>
 
 type RoutesBase = Record<string, unknown>
 type EventBase = Record<string, unknown>
+
+/**
+ * Adapt WebSocket handlers for WSX
+ */
+export class WsxHandler implements WebSocketHandler {
+	constructor(private wsx: AnyWsx) {}
+
+	async message(raw: ServerWebSocket, message: string | Buffer): Promise<void> {
+		const ws = new WsxSocket(raw as any)
+		const request: Proto.RpcRequest | Proto.RpcResponse = JSON.parse(
+			message as string,
+		)
+		const [action] = request
+		if (action === Proto.actionTypes.rpc.request) {
+			const [, id, path, withResponse, body] = request
+			const route = this.wsx.router.get(path)
+			if (!route) {
+				//todo
+				return
+			}
+
+			const { body: bodySchema } = route
+			if (bodySchema) {
+				const validationResult = await validate(bodySchema, body)
+				if (!validationResult.success) {
+					console.error("validation failed", validationResult)
+					return
+				}
+			}
+
+			const proxy = RoutingProxy(ws as any, this.wsx.store)
+			const rawResponse = route.handler({ ws, body, events: proxy })
+			if (!withResponse) return
+			const response = isPromise(rawResponse) ? await rawResponse : rawResponse
+
+			const rpcResponse: Proto.RpcResponse = [
+				Proto.actionTypes.rpc.response,
+				id,
+				response,
+			]
+			ws[sendSymbol](rpcResponse)
+			return
+		}
+
+		if (action === Proto.actionTypes.rpc.response) {
+			const [, id, body] = request
+			const resolve = this.wsx.store.resolvers.get(id)
+			if (!resolve) {
+				console.error("No resolver for call", id)
+				return
+			}
+			resolve(body)
+			return
+		}
+	}
+}
 
 /**
  * WSX server instance or plugin
@@ -31,89 +92,37 @@ export class Wsx<
 	const out Routes extends RoutesBase = {},
 	const out Events extends EventBase = {},
 > {
-	plugin: Elysia
-
 	router: Map<string, RPCRoute<ServerRpcHandler>> = new Map()
 	events: Map<string, RPCOptions> = new Map()
 	store: Store = new Store()
+	private handler: WsxHandler
 
 	constructor(options?: WsxOptions) {
-		this.plugin = new Elysia()
+		this.handler = new WsxHandler(this)
+	}
 
-		this.plugin.ws("", {
-			...options,
-			open(ws) {
-				if (options?.open) {
-					options.open(ws)
+	handle(): WebSocketHandler {
+		return {
+			message: this.handler.message.bind(this.handler),
+		}
+	}
+
+	listen(port: number): this {
+		Bun.serve({
+			port,
+			fetch(request, server) {
+				const success = server.upgrade(request, {
+					data: {
+						[idSymbol]: "",
+					},
+				})
+				if (!success) {
+					// todo: handle error
+					console.error("upgrade failed")
 				}
 			},
-			message: async (ws, message) => {
-				if (options?.message) {
-					options.message(ws, message)
-				}
-
-				const request: Proto.RpcRequest | Proto.RpcResponse = JSON.parse(
-					message as string,
-				)
-				const [action] = request
-				if (action === Proto.actionTypes.rpc.request) {
-					const [, id, path, withResponse, body] = request
-					const route = this.router.get(path)
-					if (!route) {
-						//todo
-						return
-					}
-
-					const { body: bodySchema } = route
-					if (bodySchema) {
-						const validationResult = await validate(bodySchema, body)
-						if (!validationResult.success) {
-							console.error("validation failed", validationResult)
-							return
-						}
-					}
-
-					const proxy = RoutingProxy(ws as any, this.store)
-					const rawResponse = route.handler({ ws, body, events: proxy })
-					if (!withResponse) return
-					const response = isPromise(rawResponse)
-						? await rawResponse
-						: rawResponse
-
-					const rpcResponse: Proto.RpcResponse = [
-						Proto.actionTypes.rpc.response,
-						id,
-						response,
-					]
-					ws.send(rpcResponse)
-					return
-				}
-
-				if (action === Proto.actionTypes.rpc.response) {
-					const [, id, body] = request
-					const resolve = this.store.resolvers.get(id)
-					if (!resolve) {
-						console.error("No resolver for call", id)
-						return
-					}
-					resolve(body)
-					return
-				}
-			},
-			close(ws, code, message) {
-				if (options?.close) {
-					options.close(ws, code, message)
-				}
-			},
+			websocket: this.handle(),
 		})
-	}
-
-	get handle(): Elysia["handle"] {
-		return this.plugin.handle
-	}
-
-	listen(...options: Parameters<Elysia["listen"]>): this {
-		this.plugin.listen(...options)
 		return this
 	}
 
@@ -126,7 +135,7 @@ export class Wsx<
 		Response extends Options["response"] extends AnySchema
 			? Infer<Options["response"]>
 			: unknown,
-		Eden = CreateEden<
+		Typing = PrepareTyping<
 			`${BasePath}${Path extends "/" ? "/index" : Path}`,
 			{
 				$type: "route"
@@ -137,11 +146,11 @@ export class Wsx<
 	>(
 		path: Path,
 		handler: RPCHandler<
-			{ body: Body; ws: ServerWs; events: ServerNs.Sign<Events> },
+			{ body: Body; ws: WsxSocket; events: ConsumeTyping<Events> },
 			Response
 		>,
 		options?: Options,
-	): Wsx<BasePath, Routes & Eden, Events> {
+	): Wsx<BasePath, Routes & Typing, Events> {
 		this.router.set(path, {
 			handler: handler as RPCHandler,
 			body: options?.body,
@@ -162,7 +171,7 @@ export class Wsx<
 		Response extends Options["response"] extends AnySchema
 			? Infer<Options["response"]>
 			: unknown,
-		Eden = CreateEden<
+		Typing = PrepareTyping<
 			`${BasePath}${Path extends "/" ? "/index" : Path}`,
 			{
 				$type: "event"
@@ -170,7 +179,7 @@ export class Wsx<
 				$response: Response
 			}
 		>,
-	>(path: Path, options?: Options): Wsx<BasePath, Routes, Events & Eden> {
+	>(path: Path, options?: Options): Wsx<BasePath, Routes, Events & Typing> {
 		this.events.set(path, options ?? {})
 		return this as any
 	}

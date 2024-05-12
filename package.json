@@ -1,6 +1,7 @@
 {
   "name": "wsx",
   "private": true,
+	"version": "0.0.7",
   "workspaces": ["apps/*", "libs/*"],
   "devDependencies": {
     "@biomejs/biome": "^1.7.3",

@@ -1,5 +1,5 @@
 import { Proto } from "@wsx/shared"
-import type { ServerWsInternal } from "./types"
+import { type WsxSocket, sendSymbol } from "./socket"
 
 type Method = (typeof methods)[number]
 const methods = ["call", "send"] as const
@@ -18,7 +18,7 @@ export class Store {
 }
 
 export const RoutingProxy = (
-	ws: ServerWsInternal,
+	ws: WsxSocket,
 	store: Store,
 	paths: string[] = [],
 ): any =>
@@ -45,7 +45,7 @@ export const RoutingProxy = (
 				withResponse,
 				body,
 			]
-			ws.send(JSON.stringify(rpcRequest))
+			ws[sendSymbol](rpcRequest)
 
 			if (!withResponse) return
 			let resolve: Resolve

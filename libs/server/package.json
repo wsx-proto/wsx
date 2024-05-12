@@ -10,8 +10,7 @@
   },
   "dependencies": {
     "@typeschema/main": "^0.13.9",
-		"@wsx/shared": "workspace:*",
-    "elysia": "^1.0.16"
+		"@wsx/shared": "workspace:*"
   },
 	"dependenciesMeta": {
     "@typeschema/main": {

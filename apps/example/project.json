@@ -12,7 +12,7 @@
 			}
 		},
 		"dev": {
-			"command": "bun --inspect-wait src/index.ts",
+			"command": "bun --watch --inspect-wait=ws://localhost:6499/wsx-example src/index.ts",
 			"options": {
 				"cwd": "{projectRoot}"
 			}
