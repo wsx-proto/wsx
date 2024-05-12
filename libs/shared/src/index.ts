@@ -9,8 +9,13 @@ export type RPCHandler<
 	Response = unknown,
 > = (request: Request) => MaybePromise<Response>
 
-export type RPCRoute = {
-	handler: RPCHandler
+export type ServerRpcHandler = RPCHandler<
+	{ body: unknown; ws: unknown; events: unknown },
+	unknown
+>
+
+export type RPCRoute<Handler = RPCHandler> = {
+	handler: Handler
 } & RPCOptions
 
 export type RPCOptions = {
@@ -27,3 +32,11 @@ export type RpcResponse<Response = unknown> =
 			data?: undefined
 			error: unknown
 	  }
+
+export function isObject(x: unknown): x is object {
+	return x !== null && typeof x === "object"
+}
+
+export function isPromise(x: unknown): x is Promise<unknown> {
+	return isObject(x) && x instanceof Promise
+}

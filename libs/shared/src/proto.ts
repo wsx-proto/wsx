@@ -6,11 +6,6 @@ export const actionTypes = {
 	},
 } as const
 
-/**
- * From client to server
- */
-export type GenericRequest = RpcRequest
-
 export type RpcRequest = [
 	action: ActionType["rpc"]["request"],
 	id: number,
@@ -18,11 +13,6 @@ export type RpcRequest = [
 	withResponse: boolean,
 	body: unknown,
 ]
-
-/**
- * From server to client
- */
-export type GenericResponse = RpcResponse
 
 export type RpcResponse = [
 	action: ActionType["rpc"]["response"],

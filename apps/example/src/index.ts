@@ -22,8 +22,10 @@ export const app = new Wsx()
 		body: Type.Object({ message: Type.String() }),
 		response: Type.String(),
 	})
-	.route("/user/ping", ({ ws, events }) => {
-		console.log("ping", ws.id)
+	.route("/user/ping", async ({ ws, events }) => {
+		console.log("server ping", ws.id)
+		const response = await events.user.pong.call({ message: "hello" })
+		console.log("server pong", response)
 	})
 	.route("/user/company/list", () => {})
 	.listen(port)
@@ -33,7 +35,7 @@ console.info("Server started", { port })
 const client = await Client<typeof app>(`localhost:${port}`)
 
 client.user.pong.listen(({ body: { message } }) => {
-	console.log("pong", message)
+	console.log("client pong", message)
 	return "ok"
 })
 

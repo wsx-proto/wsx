@@ -1,17 +1,19 @@
-import { Elysia, type CreateEden } from "elysia"
-import {
-	Proto,
-	type RPCHandler,
-	type RPCOptions,
-	type RPCRoute,
-} from "@wsx/shared"
 import {
 	type Schema as AnySchema,
 	type Infer,
 	validate,
 } from "@typeschema/main"
-import type { ElysiaWS } from "elysia/ws"
-import type { ServerWebSocket } from "bun"
+import {
+	Proto,
+	type RPCHandler,
+	type RPCOptions,
+	type RPCRoute,
+	type ServerRpcHandler,
+	isPromise,
+} from "@wsx/shared"
+import { type CreateEden, Elysia } from "elysia"
+import { RoutingProxy, Store } from "./proxy"
+import type { ServerNs, ServerWs } from "./types"
 
 export type WsxOptions = Parameters<Elysia["ws"]>[1]
 
@@ -25,8 +27,9 @@ export class Wsx<
 > {
 	plugin: Elysia
 
-	router: Map<string, RPCRoute> = new Map()
+	router: Map<string, RPCRoute<ServerRpcHandler>> = new Map()
 	events: Map<string, RPCOptions> = new Map()
+	store = new Store()
 
 	constructor(options?: WsxOptions) {
 		this.plugin = new Elysia()
@@ -43,7 +46,9 @@ export class Wsx<
 					options.message(ws, message)
 				}
 
-				const request: Proto.GenericRequest = JSON.parse(message as string)
+				const request: Proto.RpcRequest | Proto.RpcResponse = JSON.parse(
+					message as string,
+				)
 				const [action] = request
 				if (action === Proto.actionTypes.rpc.request) {
 					const [, id, path, withResponse, body] = request
@@ -62,7 +67,8 @@ export class Wsx<
 						}
 					}
 
-					const rawResponse = route.handler({ ws, body })
+					const proxy = RoutingProxy(ws as any, this.store)
+					const rawResponse = route.handler({ ws, body, events: proxy })
 					if (!withResponse) return
 					const response = isPromise(rawResponse)
 						? await rawResponse
@@ -74,6 +80,18 @@ export class Wsx<
 						response,
 					]
 					ws.send(rpcResponse)
+					return
+				}
+
+				if (action === Proto.actionTypes.rpc.response) {
+					const [, id, body] = request
+					const resolve = this.store.resolvers.get(id)
+					if (!resolve) {
+						console.error("No resolver for call", id)
+						return
+					}
+					resolve(body)
+					return
 				}
 			},
 			close(ws, code, message) {
@@ -112,7 +130,10 @@ export class Wsx<
 		>,
 	>(
 		path: Path,
-		handler: RPCHandler<{ body: Body; ws: ServerWs; events: Events }, Response>,
+		handler: RPCHandler<
+			{ body: Body; ws: ServerWs; events: ServerNs.Sign<Events> },
+			Response
+		>,
 		options?: Options,
 	): Wsx<BasePath, Routes & Eden, Events> {
 		this.router.set(path, {
@@ -147,17 +168,4 @@ export class Wsx<
 		this.events.set(path, options ?? {})
 		return this as any
 	}
-}
-
-type ServerWs = Pick<
-	ElysiaWS<ServerWebSocket<{}>>,
-	"id" | "data" | "close" | "terminate" | "cork" | "remoteAddress"
->
-
-function isObject(x: unknown): x is object {
-	return x !== null && typeof x === "object"
-}
-
-function isPromise(x: unknown): x is Promise<unknown> {
-	return isObject(x) && x instanceof Promise
 }

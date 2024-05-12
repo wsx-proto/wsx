@@ -2,10 +2,10 @@ import type { Wsx } from "@wsx/server"
 import type { ClientNs } from "./types"
 export type { ClientNs as ClientType }
 
-import { Proto } from "@wsx/shared"
+import { Proto, type RPCHandler, isPromise } from "@wsx/shared"
 
 type Method = (typeof methods)[number]
-const methods = ["call", "send", "listen"] as const
+const methods = ["call", "send", "listen", "unlisten"] as const
 
 const locals = ["localhost", "127.0.0.1", "0.0.0.0"]
 
@@ -23,7 +23,7 @@ class Store {
 	/**
 	 * listeners for server-sent events
 	 */
-	listeners: Map<string, EventTarget> = new Map()
+	listeners: Map<string, RPCHandler> = new Map()
 }
 
 const RoutingProxy = (
@@ -48,16 +48,13 @@ const RoutingProxy = (
 			const path = `/${methodPaths.join("/")}`
 
 			if (method === "listen") {
-				let emitter = store.listeners.get(path)
-				if (!emitter) {
-					emitter = new EventTarget()
-				}
-				emitter.addEventListener("message", body) // body is a handler ¯\_(ツ)_/¯
-				return {
-					remove() {
-						emitter.removeEventListener("message", body)
-					},
-				}
+				store.listeners.set(path, body) // body is a handler ¯\_(ツ)_/¯
+				return
+			}
+
+			if (method === "unlisten") {
+				store.listeners.delete(path)
+				return
 			}
 
 			const id = store.id++
@@ -102,8 +99,8 @@ export const Client = <
 			reject(new Error(`Cannot connect to server ${domain}`))
 		})
 
-		ws.addEventListener("message", ({ data }) => {
-			const response = JSON.parse(data) as Proto.GenericResponse
+		ws.addEventListener("message", async ({ data }) => {
+			const response = JSON.parse(data) as Proto.RpcResponse | Proto.RpcRequest
 			const [action] = response
 			if (action === Proto.actionTypes.rpc.response) {
 				const [, id, body] = response
@@ -113,6 +110,27 @@ export const Client = <
 					return
 				}
 				resolve(body)
+				return
+			}
+			if (action === Proto.actionTypes.rpc.request) {
+				const [, id, path, withResponse, body] = response
+				const handler = store.listeners.get(path)
+				if (!handler) {
+					console.error("No listener for path", path)
+					return
+				}
+				const rawResponse = handler({ ws, body })
+				if (!withResponse) return
+				const responseBody = isPromise(rawResponse)
+					? await rawResponse
+					: rawResponse
+				const rpcResponse: Proto.RpcResponse = [
+					Proto.actionTypes.rpc.response,
+					id,
+					responseBody,
+				]
+				ws.send(JSON.stringify(rpcResponse))
+				return
 			}
 		})
 	})

@@ -44,9 +44,11 @@ export namespace ClientNs {
 							 */
 							listen(
 								handler: RPCHandler<{ body: Body; ws: ClientWs }, Response>,
-							): {
-								remove(): void
-							}
+							): void
+							/**
+							 * stop handling server-sent events
+							 */
+							unlisten(): void
 						} & Prettify<Sign<Route[K]>>
 					: Prettify<Sign<Route[K]>>
 		},
