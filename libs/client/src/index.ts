@@ -1,6 +1,6 @@
 import type { Wsx } from "@wsx/server"
-import type { ClientNs } from "./types"
-export type { ClientNs as ClientType }
+import type { ClientConfig, ClientType } from "./types"
+export type { ClientType, ClientConfig, ClientWs } from "./types"
 
 import { Proto, type RPCHandler, isPromise } from "@wsx/shared"
 
@@ -29,7 +29,7 @@ class Store {
 const RoutingProxy = (
 	ws: WebSocket,
 	store: Store,
-	config: ClientNs.Config,
+	config: ClientConfig,
 	paths: string[] = [],
 ): any =>
 	new Proxy(() => {}, {
@@ -78,12 +78,15 @@ const RoutingProxy = (
 		},
 	}) as any
 
+/**
+ * Create a client for the WSX server
+ */
 export const Client = <
 	const App extends Wsx<any, any>,
-	Callers = ClientNs.Create<App>,
+	Callers = ClientType<App>,
 >(
 	domain: string,
-	config: ClientNs.Config = {},
+	config: ClientConfig = {},
 ): Promise<Callers> => {
 	return new Promise((resolve, reject) => {
 		const ws = new WebSocket(config.keepDomain ? domain : fixDomain(domain))

@@ -15,11 +15,17 @@ import { type CreateEden, Elysia } from "elysia"
 import { RoutingProxy, Store } from "./proxy"
 import type { ServerNs, ServerWs } from "./types"
 
+/**
+ * Options for WSX server
+ */
 export type WsxOptions = Parameters<Elysia["ws"]>[1]
 
-export type RoutesBase = Record<string, unknown>
-export type EventBase = Record<string, unknown>
+type RoutesBase = Record<string, unknown>
+type EventBase = Record<string, unknown>
 
+/**
+ * WSX server instance or plugin
+ */
 export class Wsx<
 	const in out BasePath extends string = "",
 	const out Routes extends RoutesBase = {},
