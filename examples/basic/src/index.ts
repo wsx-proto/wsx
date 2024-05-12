@@ -32,15 +32,18 @@ export const app = new Wsx()
 
 console.info("Server started", { port })
 
-const { routes, raw } = await Client<typeof app>(`localhost:${port}`)
+const {
+	routes: { user },
+	raw,
+} = await Client<typeof app>(`localhost:${port}`)
 
-routes.user.pong.listen(({ body: { message } }) => {
+user.pong.listen(({ body: { message } }) => {
 	console.log("client pong", message)
 	setImmediate(() => raw.close())
 	return "ok"
 })
 
-const id = await routes.user.create.call({ name: "Andrii" })
+const id = await user.create.call({ name: "Andrii" })
 console.info(id)
 
-routes.user.ping.emit()
+user.ping.emit()

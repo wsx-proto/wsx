@@ -17,8 +17,8 @@
 			"path": "libs/shared"
 		},
 		{
-			"name": "example",
-			"path": "apps/example"
+			"name": "examples",
+			"path": "examples"
 		}
 	],
 	"settings": {

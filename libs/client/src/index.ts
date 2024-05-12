@@ -79,7 +79,7 @@ const RoutingProxy = (
 	}) as any
 
 /**
- * Create a client for the WSX server
+ * Create a client for the Wsx server
  */
 export const Client = <
 	const App extends Wsx<any, any>,

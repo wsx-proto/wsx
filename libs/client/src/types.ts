@@ -2,7 +2,7 @@ import type { Wsx } from "@wsx/server"
 import type { Prettify, RPCHandler, RpcResponse } from "@wsx/shared"
 
 /**
- * Construct client type for WSX server
+ * Construct client type for Wsx server
  */
 export type ClientType<App extends Wsx<any, any>> = App extends Wsx<
 	any,
@@ -58,13 +58,13 @@ export type Sign<in out Route extends Record<string, any>> = Omit<
 >
 
 /**
- * WSX client configuration
+ * Wsx client configuration
  */
 export interface ClientConfig {
 	keepDomain?: boolean
 }
 
 /**
- * WSX client WebSocket
+ * Wsx client WebSocket
  */
 export type ClientWs = Pick<WebSocket, "url" | "close" | "terminate">

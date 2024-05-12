@@ -1,11 +1,11 @@
 {
 	"$schema": "../../node_modules/nx/schemas/project-schema.json",
-	"name": "example",
+	"name": "basic",
 	"projectType": "application",
 	"sourceRoot": "{projectRoot}/src",
 	"targets": {
 		"check": {},
-		"run": {
+		"start": {
 			"command": "bun src/index.ts",
 			"options": {
 				"cwd": "{projectRoot}"

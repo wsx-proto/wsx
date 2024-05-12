@@ -10,7 +10,7 @@ export type WsxRawSocket = ServerWebSocket<{
 }>
 
 /**
- * WebSocket augmented with WSX-specific properties
+ * WebSocket augmented with Wsx-specific properties
  */
 export class WsxSocket<Ws extends WsxRawSocket = WsxRawSocket> {
 	constructor(public raw: Ws) {

@@ -2,7 +2,7 @@
   "name": "wsx",
   "private": true,
 	"version": "0.0.8",
-  "workspaces": ["apps/*", "libs/*"],
+  "workspaces": ["examples/*", "libs/*"],
   "devDependencies": {
     "@biomejs/biome": "^1.7.3",
     "@evilmartians/lefthook": "^1.6.10",

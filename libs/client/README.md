@@ -1,4 +1,4 @@
-Client for WSX framework. RPC, Pub/Sub, routing and end-to-end typesafety for WebSockets
+Client for Wsx framework. RPC, Pub/Sub, routing and end-to-end typesafety for WebSockets
 ```ts
 import { Client } from "@wsx/client"
 // app is an instance of Wsx

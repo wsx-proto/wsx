@@ -20,7 +20,7 @@ import { WsxSocket, idSymbol, sendSymbol, socketSymbol } from "./socket"
 export { WsxSocket } from "./socket"
 
 /**
- * Options for WSX server
+ * Options for Wsx server
  */
 export type WsxOptions = {}
 
@@ -30,7 +30,7 @@ type RoutesBase = Record<string, unknown>
 type EventBase = Record<string, unknown>
 
 /**
- * Adapt WebSocket handlers for WSX
+ * Adapt WebSocket handlers for Wsx
  */
 export class WsxHandler implements WebSocketHandler {
 	constructor(private wsx: AnyWsx) {}
@@ -94,7 +94,7 @@ export class WsxHandler implements WebSocketHandler {
 }
 
 /**
- * WSX server instance or plugin
+ * Wsx server instance or plugin
  */
 export class Wsx<
 	const in out BasePath extends string = "",
@@ -111,7 +111,7 @@ export class Wsx<
 	}
 
 	/**
-	 * Attach the WSX server to an existing server
+	 * Attach the Wsx server to an existing server
 	 */
 	attach(): WebSocketHandler & { upgrade: typeof upgrade } {
 		return {

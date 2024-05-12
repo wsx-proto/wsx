@@ -1,4 +1,4 @@
-Server for WSX framework. RPC, Pub/Sub, routing and end-to-end typesafety for WebSockets
+Server for Wsx framework. RPC, Pub/Sub, routing and end-to-end typesafety for WebSockets
 ```ts
 import { Wsx } from "@wsx/server"
 import { Type } from "@sinclair/typebox"
