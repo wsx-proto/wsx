@@ -8,3 +8,5 @@ const client = await Client<typeof app>('localhost:3000')
 const newUserId = await client.user.create.call({ email: "meowningmaster@gmail.com" })
 console.info(newUserId)
 ```
+
+[Full example](https://github.com/MeowningMaster/wsx/blob/main/apps/example/src/index.ts)

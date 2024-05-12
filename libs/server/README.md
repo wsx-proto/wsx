@@ -18,3 +18,8 @@ export const app = new Wsx()
 	)
 	.listen(3000)
 ```
+
+[Full example](https://github.com/MeowningMaster/wsx/blob/main/apps/example/src/index.ts)
+
+> [!IMPORTANT]  
+> Don't forget to install [TypeSchema adapter](https://typeschema.com/) for your validator

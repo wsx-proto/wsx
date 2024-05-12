@@ -1,6 +1,6 @@
 {
 	"name": "@wsx/server",
-	"version": "0.0.5",
+	"version": "0.0.6",
 	"exports": "./src/index.ts",
 	"imports": {
 		"@wsx/shared": "jsr:@wsx/shared@0.0.5",
