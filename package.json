@@ -7,7 +7,7 @@
     "@biomejs/biome": "^1.7.3",
     "@evilmartians/lefthook": "^1.6.10",
     "npm-check-updates": "^16.14.20",
-    "nx": "19.0.1"
+    "nx": "19.0.2"
   },
 	"trustedDependencies": [
 		"@biomejs/biome",
