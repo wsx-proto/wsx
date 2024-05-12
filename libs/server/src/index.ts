@@ -4,6 +4,7 @@ import {
 	validate,
 } from "@typeschema/main"
 import {
+	type MaybePromise,
 	Proto,
 	type RPCHandler,
 	type RPCOptions,
@@ -14,8 +15,8 @@ import {
 import { RoutingProxy, Store } from "./proxy"
 import type { ConsumeTyping, PrepareTyping } from "./types"
 
-import type { ServerWebSocket, WebSocketHandler } from "bun"
-import { WsxSocket, idSymbol, sendSymbol } from "./socket"
+import type { Serve, Server, ServerWebSocket, WebSocketHandler } from "bun"
+import { WsxSocket, idSymbol, sendSymbol, socketSymbol } from "./socket"
 export { WsxSocket } from "./socket"
 
 /**
@@ -34,8 +35,16 @@ type EventBase = Record<string, unknown>
 export class WsxHandler implements WebSocketHandler {
 	constructor(private wsx: AnyWsx) {}
 
+	open(raw: ServerWebSocket): void {
+		// preserve
+	}
+
+	close(raw: ServerWebSocket): void {
+		// preserve
+	}
+
 	async message(raw: ServerWebSocket, message: string | Buffer): Promise<void> {
-		const ws = new WsxSocket(raw as any)
+		const ws = WsxSocket.reuse(raw as any)
 		const request: Proto.RpcRequest | Proto.RpcResponse = JSON.parse(
 			message as string,
 		)
@@ -101,27 +110,52 @@ export class Wsx<
 		this.handler = new WsxHandler(this)
 	}
 
-	handle(): WebSocketHandler {
+	private static upgrade(
+		server: Server,
+		...[request, options]: Parameters<Server["upgrade"]>
+	): boolean {
+		if (request.headers.get("sec-websocket-protocol") !== "wsx-wip") {
+			return false
+		}
+		return server.upgrade(request, {
+			headers: options?.headers,
+			data: {
+				...(options?.data ?? {}),
+				[socketSymbol]: null,
+				[idSymbol]: "",
+			},
+		})
+	}
+
+	/**
+	 * Attach the WSX server to an existing server
+	 */
+	attach(): WebSocketHandler & { upgrade: typeof Wsx.upgrade } {
 		return {
+			upgrade: Wsx.upgrade,
+			open: this.handler.open.bind(this.handler),
+			close: this.handler.close.bind(this.handler),
 			message: this.handler.message.bind(this.handler),
 		}
 	}
 
-	listen(port: number): this {
+	listen(
+		port: number,
+		options?: Omit<Serve, "port" | "fetch" | "websocket"> & {
+			httpHandler?: (request: Request) => MaybePromise<Response>
+		},
+	): this {
+		const websocket = this.attach()
 		Bun.serve({
 			port,
+
 			fetch(request, server) {
-				const success = server.upgrade(request, {
-					data: {
-						[idSymbol]: "",
-					},
-				})
+				const success = websocket.upgrade(server, request)
 				if (!success) {
-					// todo: handle error
-					console.error("upgrade failed")
+					options?.httpHandler?.(request)
 				}
 			},
-			websocket: this.handle(),
+			websocket,
 		})
 		return this
 	}

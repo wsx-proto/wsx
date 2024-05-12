@@ -1,9 +1,13 @@
 import type { ServerWebSocket } from "bun"
 
+export const socketSymbol = Symbol("socket")
 export const idSymbol = Symbol("id")
 export const sendSymbol = Symbol("send")
 
-export type WsxRawSocket = ServerWebSocket<{ [idSymbol]?: string }>
+export type WsxRawSocket = ServerWebSocket<{
+	[socketSymbol]: WsxSocket
+	[idSymbol]?: string
+}>
 
 /**
  * WebSocket augmented with WSX-specific properties
@@ -15,6 +19,13 @@ export class WsxSocket<Ws extends WsxRawSocket = WsxRawSocket> {
 			crypto.getRandomValues(array)
 			this.id = array[0].toString()
 		}
+	}
+
+	static reuse(ws: WsxRawSocket) {
+		if (!ws.data[socketSymbol]) {
+			ws.data[socketSymbol] = new WsxSocket(ws)
+		}
+		return ws.data[socketSymbol]
 	}
 
 	get id(): string {

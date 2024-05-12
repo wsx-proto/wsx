@@ -6,9 +6,9 @@ const port = 3000
 export const app = new Wsx()
 	.route(
 		"/user/create",
-		({ body }) => {
+		({ body, ws }) => {
 			console.log("create user", body)
-			return `user ${body.name} created`
+			return ws.id
 		},
 		{
 			body: Type.Object({ name: Type.String() }),
@@ -32,14 +32,15 @@ export const app = new Wsx()
 
 console.info("Server started", { port })
 
-const client = await Client<typeof app>(`localhost:${port}`)
+const { routes, raw } = await Client<typeof app>(`localhost:${port}`)
 
-client.user.pong.listen(({ body: { message } }) => {
+routes.user.pong.listen(({ body: { message } }) => {
 	console.log("client pong", message)
+	setImmediate(() => raw.close())
 	return "ok"
 })
 
-const r1 = await client.user.create.call({ name: "Andrii" })
-console.info(r1)
+const id = await routes.user.create.call({ name: "Andrii" })
+console.info(id)
 
-client.user.ping.emit()
+routes.user.ping.emit()

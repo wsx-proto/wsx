@@ -87,15 +87,18 @@ export const Client = <
 >(
 	domain: string,
 	config: ClientConfig = {},
-): Promise<Callers> => {
+): Promise<{ routes: Callers; raw: WebSocket }> => {
 	return new Promise((resolve, reject) => {
-		const ws = new WebSocket(config.keepDomain ? domain : fixDomain(domain))
+		const ws = new WebSocket(
+			config.keepDomain ? domain : fixDomain(domain),
+			"wsx-wip",
+		)
 		const store = new Store()
 
 		const routingProxy = RoutingProxy(ws, store, config)
 
 		ws.addEventListener("open", () => {
-			resolve(routingProxy)
+			resolve({ routes: routingProxy, raw: ws })
 		})
 
 		ws.addEventListener("close", () => {
