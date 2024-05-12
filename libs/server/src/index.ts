@@ -35,7 +35,7 @@ export class Wsx<
 
 	router: Map<string, RPCRoute<ServerRpcHandler>> = new Map()
 	events: Map<string, RPCOptions> = new Map()
-	store = new Store()
+	store: Store = new Store()
 
 	constructor(options?: WsxOptions) {
 		this.plugin = new Elysia()
