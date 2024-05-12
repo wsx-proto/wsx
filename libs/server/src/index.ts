@@ -110,29 +110,12 @@ export class Wsx<
 		this.handler = new WsxHandler(this)
 	}
 
-	private static upgrade(
-		server: Server,
-		...[request, options]: Parameters<Server["upgrade"]>
-	): boolean {
-		if (request.headers.get("sec-websocket-protocol") !== "wsx-wip") {
-			return false
-		}
-		return server.upgrade(request, {
-			headers: options?.headers,
-			data: {
-				...(options?.data ?? {}),
-				[socketSymbol]: null,
-				[idSymbol]: "",
-			},
-		})
-	}
-
 	/**
 	 * Attach the WSX server to an existing server
 	 */
-	attach(): WebSocketHandler & { upgrade: typeof Wsx.upgrade } {
+	attach(): WebSocketHandler & { upgrade: typeof upgrade } {
 		return {
-			upgrade: Wsx.upgrade,
+			upgrade,
 			open: this.handler.open.bind(this.handler),
 			close: this.handler.close.bind(this.handler),
 			message: this.handler.message.bind(this.handler),
@@ -217,4 +200,21 @@ export class Wsx<
 		this.events.set(path, options ?? {})
 		return this as any
 	}
+}
+
+function upgrade(
+	server: Server,
+	...[request, options]: Parameters<Server["upgrade"]>
+): boolean {
+	if (request.headers.get("sec-websocket-protocol") !== "wsx-wip") {
+		return false
+	}
+	return server.upgrade(request, {
+		headers: options?.headers,
+		data: {
+			...(options?.data ?? {}),
+			[socketSymbol]: null,
+			[idSymbol]: "",
+		},
+	})
 }

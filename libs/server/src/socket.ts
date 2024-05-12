@@ -21,7 +21,7 @@ export class WsxSocket<Ws extends WsxRawSocket = WsxRawSocket> {
 		}
 	}
 
-	static reuse(ws: WsxRawSocket) {
+	static reuse(ws: WsxRawSocket): WsxSocket {
 		if (!ws.data[socketSymbol]) {
 			ws.data[socketSymbol] = new WsxSocket(ws)
 		}
