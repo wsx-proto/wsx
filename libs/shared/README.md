@@ -1,2 +1,4 @@
 # Shared types and utils for Wsx framework
-Don't install this library explicitly
+
+> [!CAUTION]
+> Don't install this library explicitly
