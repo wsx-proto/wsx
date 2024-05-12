@@ -4,9 +4,9 @@ import { Client } from "@wsx/client"
 // app is an instance of Wsx
 import type { app } from "@my-project/server"
 
-const client = await Client<typeof app>('localhost:3000')
-const newUserId = await client.user.create.call({ email: "meowningmaster@gmail.com" })
+const { routes: {user} } = await Client<typeof app>('localhost:3000')
+const newUserId = await user.create.call({ email: "meowningmaster@gmail.com" })
 console.info(newUserId)
 ```
 
-[Full example](https://github.com/MeowningMaster/wsx/blob/main/apps/example/src/index.ts)
+[More examples](https://github.com/MeowningMaster/wsx/tree/main/examples)
