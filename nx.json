@@ -11,7 +11,7 @@
 		"publish": {
 			"executor": "nx:run-commands",
 			"options": {
-				"command": "bunx jsr publish",
+				"command": "bunx jsr publish --allow-dirty",
 				"cwd": "{projectRoot}"
 			}
 		}
