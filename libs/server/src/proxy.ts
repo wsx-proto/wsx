@@ -1,4 +1,5 @@
 import { Proto } from "@wsx/shared"
+import type { AnyWsx } from "."
 import { type WsxSocket, sendSymbol } from "./socket"
 
 type Method = (typeof methods)[number]
@@ -18,6 +19,7 @@ export class Store {
 }
 
 export const RoutingProxy = (
+	prefix: string,
 	ws: WsxSocket,
 	store: Store,
 	paths: string[] = [],
@@ -26,6 +28,7 @@ export const RoutingProxy = (
 		get(_, param: string): any {
 			if (param === "then") return undefined //! prevent promise resolution quirk
 			return RoutingProxy(
+				prefix,
 				ws,
 				store,
 				param === "index" ? paths : [...paths, param],
@@ -34,7 +37,7 @@ export const RoutingProxy = (
 		apply(_, __, [body, options]) {
 			const methodPaths = [...paths]
 			const method = methodPaths.pop() as Method
-			const path = `/${methodPaths.join("/")}`
+			const path = `${prefix}/${methodPaths.join("/")}`
 
 			const id = store.id++
 			const withResponse = method === "call"

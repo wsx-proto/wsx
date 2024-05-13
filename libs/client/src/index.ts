@@ -2,7 +2,7 @@ import type { Wsx } from "@wsx/server"
 import type { ClientConfig, ClientType } from "./types"
 export type { ClientType, ClientConfig, ClientWs } from "./types"
 
-import { Proto, type RPCHandler, isPromise } from "@wsx/shared"
+import { Proto, type RPCHandler, isPromise, subprotocol } from "@wsx/shared"
 
 type Method = (typeof methods)[number]
 const methods = ["call", "send", "listen", "unlisten"] as const
@@ -91,7 +91,7 @@ export const Client = <
 	return new Promise((resolve, reject) => {
 		const ws = new WebSocket(
 			config.keepDomain ? domain : fixDomain(domain),
-			"wsx-wip",
+			subprotocol,
 		)
 		const store = new Store()
 

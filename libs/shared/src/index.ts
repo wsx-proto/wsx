@@ -15,6 +15,10 @@ export type ServerRpcHandler = RPCHandler<
 >
 
 export type RPCRoute<Handler = RPCHandler> = {
+	/**
+	 * For events localisation
+	 */
+	prefix: string
 	handler: Handler
 } & RPCOptions
 
@@ -40,3 +44,5 @@ export function isObject(x: unknown): x is object {
 export function isPromise(x: unknown): x is Promise<unknown> {
 	return isObject(x) && x instanceof Promise
 }
+
+export const subprotocol = "wsx-wip"

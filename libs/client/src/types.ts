@@ -14,32 +14,34 @@ export type ClientType<App extends Wsx<any, any>> = App extends Wsx<
 
 export type Sign<in out Route extends Record<string, any>> = Omit<
 	{
-		[K in keyof Route]: Route[K] extends {
-			$type: "route"
-			$body: infer Body
-			$response: infer Response
-		}
-			? {
-					/**
-					 * send event with response
-					 */
-					call(
-						// biome-ignore lint/suspicious/noConfusingVoidType: void hack
-						body: unknown extends Body ? void : Body,
-					): Promise<RpcResponse<Response>>
-					/**
-					 * send event without response
-					 */
-					emit(
-						// biome-ignore lint/suspicious/noConfusingVoidType: void hack
-						body: unknown extends Body ? void : Body,
-					): void
-				} & Prettify<Sign<Route[K]>>
-			: Route[K] extends {
-						$type: "event"
-						$body: infer Body
-						$response: infer Response
+		[K in keyof Route]: Prettify<Sign<Route[K]>> &
+			(Route[K] extends {
+				$type: "route"
+				$body: infer Body
+				$response: infer Response
+			}
+				? {
+						/**
+						 * send event with response
+						 */
+						call(
+							// biome-ignore lint/suspicious/noConfusingVoidType: void hack
+							body: unknown extends Body ? void : Body,
+						): Promise<RpcResponse<Response>>
+						/**
+						 * send event without response
+						 */
+						emit(
+							// biome-ignore lint/suspicious/noConfusingVoidType: void hack
+							body: unknown extends Body ? void : Body,
+						): void
 					}
+				: Record<string, never>) &
+			(Route[K] extends {
+				$type: "event"
+				$body: infer Body
+				$response: infer Response
+			}
 				? {
 						/**
 						 * handle server-sent events
@@ -51,8 +53,8 @@ export type Sign<in out Route extends Record<string, any>> = Omit<
 						 * stop handling server-sent events
 						 */
 						unlisten(): void
-					} & Prettify<Sign<Route[K]>>
-				: Prettify<Sign<Route[K]>>
+					}
+				: Record<string, never>)
 	},
 	"$body" | "$response" | "$type"
 >

@@ -47,3 +47,12 @@ type _PrepareTyping<
 	: {
 			[x in Path]: Property
 		}
+
+export type AppendTypingPrefix<
+	Prefix extends string,
+	Typing extends Record<string, unknown> = {},
+> = Prefix extends ""
+	? Typing
+	: {
+			[Key in Prefix extends `/${infer Path}` ? Path : Prefix]: Typing
+		}

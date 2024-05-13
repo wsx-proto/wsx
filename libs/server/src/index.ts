@@ -11,9 +11,10 @@ import {
 	type RPCRoute,
 	type ServerRpcHandler,
 	isPromise,
+	subprotocol,
 } from "@wsx/shared"
 import { RoutingProxy, Store } from "./proxy"
-import type { ConsumeTyping, PrepareTyping } from "./types"
+import type { AppendTypingPrefix, ConsumeTyping, PrepareTyping } from "./types"
 
 import type { Serve, Server, ServerWebSocket, WebSocketHandler } from "bun"
 import { WsxSocket, idSymbol, sendSymbol, socketSymbol } from "./socket"
@@ -22,7 +23,9 @@ export { WsxSocket } from "./socket"
 /**
  * Options for Wsx server
  */
-export type WsxOptions = {}
+export type WsxOptions<Prefix extends string = ""> = {
+	prefix?: Prefix
+}
 
 export type AnyWsx = Wsx<any, any, any>
 
@@ -66,7 +69,7 @@ export class WsxHandler implements WebSocketHandler {
 				}
 			}
 
-			const proxy = RoutingProxy(ws as any, this.wsx.store)
+			const proxy = RoutingProxy(route.prefix, ws as any, this.wsx.store)
 			const rawResponse = route.handler({ ws, body, events: proxy })
 			if (!withResponse) return
 			const response = isPromise(rawResponse) ? await rawResponse : rawResponse
@@ -97,17 +100,19 @@ export class WsxHandler implements WebSocketHandler {
  * Wsx server instance or plugin
  */
 export class Wsx<
-	const in out BasePath extends string = "",
+	const in out Prefix extends string = "",
 	const out Routes extends RoutesBase = {},
 	const out Events extends EventBase = {},
 > {
+	prefix: Prefix
 	router: Map<string, RPCRoute<ServerRpcHandler>> = new Map()
 	events: Map<string, RPCOptions> = new Map()
 	store: Store = new Store()
 	private handler: WsxHandler
 
-	constructor(options?: WsxOptions) {
+	constructor(options?: WsxOptions<Prefix>) {
 		this.handler = new WsxHandler(this)
+		this.prefix = options?.prefix ?? ("" as Prefix)
 	}
 
 	/**
@@ -128,7 +133,7 @@ export class Wsx<
 			/**
 			 * Mount a custom handler for non-wsx requests
 			 */
-			fallback?: (request: Request) => MaybePromise<Response>
+			httpHandler?: (request: Request) => MaybePromise<Response>
 		},
 	): this {
 		const websocket = this.attach()
@@ -138,7 +143,7 @@ export class Wsx<
 			fetch(request, server) {
 				const success = websocket.upgrade(server, request)
 				if (!success) {
-					options?.fallback?.(request)
+					options?.httpHandler?.(request)
 				}
 			},
 			websocket,
@@ -156,7 +161,7 @@ export class Wsx<
 			? Infer<Options["response"]>
 			: unknown,
 		Typing = PrepareTyping<
-			`${BasePath}${Path extends "/" ? "/index" : Path}`,
+			`${Prefix}${Path extends "/" ? "/index" : Path}`,
 			{
 				$type: "route"
 				$body: Body
@@ -170,8 +175,9 @@ export class Wsx<
 			Response
 		>,
 		options?: Options,
-	): Wsx<BasePath, Routes & Typing, Events> {
-		this.router.set(path, {
+	): Wsx<Prefix, Routes & Typing, Events> {
+		this.router.set(this.prefix + path, {
+			prefix: this.prefix,
 			handler: handler as RPCHandler,
 			body: options?.body,
 			response: options?.response,
@@ -192,15 +198,36 @@ export class Wsx<
 			? Infer<Options["response"]>
 			: unknown,
 		Typing = PrepareTyping<
-			`${BasePath}${Path extends "/" ? "/index" : Path}`,
+			`${Prefix}${Path extends "/" ? "/index" : Path}`,
 			{
 				$type: "event"
 				$body: Body
 				$response: Response
 			}
 		>,
-	>(path: Path, options?: Options): Wsx<BasePath, Routes, Events & Typing> {
-		this.events.set(path, options ?? {})
+	>(path: Path, options?: Options): Wsx<Prefix, Routes, Events & Typing> {
+		this.events.set(this.prefix + path, options ?? {})
+		return this as any
+	}
+
+	use<
+		PluginPath extends string,
+		PluginRoutes extends RoutesBase,
+		PluginEvents extends EventBase,
+	>(
+		plugin: Wsx<PluginPath, PluginRoutes, PluginEvents>,
+	): Wsx<
+		Prefix,
+		Routes & AppendTypingPrefix<Prefix, PluginRoutes>,
+		Events & AppendTypingPrefix<Prefix, PluginEvents>
+	> {
+		for (const [path, route] of plugin.router) {
+			this.router.set(this.prefix + path, {
+				...route,
+				prefix: this.prefix + route.prefix,
+			})
+		}
+
 		return this as any
 	}
 }
@@ -209,7 +236,7 @@ function upgrade(
 	server: Server,
 	...[request, options]: Parameters<Server["upgrade"]>
 ): boolean {
-	if (request.headers.get("sec-websocket-protocol") !== "wsx-wip") {
+	if (request.headers.get("sec-websocket-protocol") !== subprotocol) {
 		return false
 	}
 	return server.upgrade(request, {
