@@ -3,7 +3,8 @@ Websocket framework
 
 # Features
 - [x] Router
-- [ ] Plugin system
+- [x] Plugin system
+- [ ] Hooks
 - [ ] MessagePack compression
 - [x] RPC calls
 - [ ] PubSub
