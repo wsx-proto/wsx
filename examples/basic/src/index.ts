@@ -1,6 +1,10 @@
 import { Type } from "@sinclair/typebox"
 import { Client } from "@wsx/client"
-import { Wsx } from "@wsx/server"
+import { LocalBroadcasts, Wsx } from "@wsx/server"
+
+const localcast = LocalBroadcasts()
+
+localcast.user
 
 const deep = new Wsx({ prefix: "/deep" }).route("/nested", () => {
 	console.log("nested")

@@ -1,4 +1,5 @@
 import type { Prettify, RpcResponse } from "@wsx/shared"
+import type { Broadcast } from "./broadcast"
 
 export type ConsumeTyping<in out Route extends Record<string, any>> = Omit<
 	{
@@ -14,6 +15,10 @@ export type ConsumeTyping<in out Route extends Record<string, any>> = Omit<
 					call(
 						// biome-ignore lint/suspicious/noConfusingVoidType: void hack
 						body: unknown extends Body ? void : Body,
+						/**
+						 * optional selector to target specific client, if not provided call will be sent to current client
+						 */
+						options?: { id?: string },
 					): Promise<RpcResponse<Response>>
 					/**
 					 * send event without response
@@ -21,12 +26,22 @@ export type ConsumeTyping<in out Route extends Record<string, any>> = Omit<
 					emit(
 						// biome-ignore lint/suspicious/noConfusingVoidType: void hack
 						body: unknown extends Body ? void : Body,
+						/**
+						 * optional selector to target specific clients, if not provided emit will be sent to current client
+						 */
+						options?: SendOptions,
 					): void
 				} & Prettify<ConsumeTyping<Route[K]>>
 			: Prettify<ConsumeTyping<Route[K]>>
 	},
 	"$body" | "$response" | "$type"
 >
+
+export type CallOptions = { id?: string }
+
+export type EmitOptions = { id?: string } | { broadcast?: Broadcast }
+
+export type SendOptions = CallOptions | EmitOptions
 
 export type PrepareTyping<
 	Path extends string,

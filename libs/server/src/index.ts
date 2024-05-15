@@ -17,8 +17,13 @@ import { RoutingProxy, Store } from "./proxy"
 import type { AppendTypingPrefix, ConsumeTyping, PrepareTyping } from "./types"
 
 import type { Serve, Server, ServerWebSocket, WebSocketHandler } from "bun"
-import { WsxSocket, idSymbol, sendSymbol, socketSymbol } from "./socket"
+import { roomRemoveSymbol } from "./broadcast"
+import { WsxSocket, idSymbol, roomsSymbol, sendSymbol } from "./socket"
 export { WsxSocket } from "./socket"
+export {
+	Broadcast,
+	LocalBroadcasts,
+} from "./broadcast"
 
 /**
  * Options for Wsx server
@@ -39,11 +44,19 @@ export class WsxHandler implements WebSocketHandler {
 	constructor(private wsx: AnyWsx) {}
 
 	open(raw: ServerWebSocket): void {
-		// preserve
+		const socket = WsxSocket.reuse(raw as any)
+		this.wsx.sockets.set(socket.id, socket)
 	}
 
 	close(raw: ServerWebSocket): void {
-		// preserve
+		const socketRaw = raw as unknown as WsxSocket["raw"]
+		this.wsx.sockets.delete(socketRaw.data[idSymbol]!)
+		const rooms = socketRaw.data[roomsSymbol]
+		if (rooms) {
+			for (const room of rooms) {
+				room[roomRemoveSymbol](raw as any)
+			}
+		}
 	}
 
 	async message(raw: ServerWebSocket, message: string | Buffer): Promise<void> {
@@ -69,7 +82,7 @@ export class WsxHandler implements WebSocketHandler {
 				}
 			}
 
-			const proxy = RoutingProxy(route.prefix, ws as any, this.wsx.store)
+			const proxy = RoutingProxy(route.prefix, ws as any, this.wsx)
 			const rawResponse = route.handler({ ws, body, events: proxy })
 			if (!withResponse) return
 			const response = isPromise(rawResponse) ? await rawResponse : rawResponse
@@ -108,6 +121,7 @@ export class Wsx<
 	router: Map<string, RPCRoute<ServerRpcHandler>> = new Map()
 	events: Map<string, RPCOptions> = new Map()
 	store: Store = new Store()
+	sockets = new Map<string, WsxSocket>()
 	private handler: WsxHandler
 
 	constructor(options?: WsxOptions<Prefix>) {
@@ -239,12 +253,14 @@ function upgrade(
 	if (request.headers.get("sec-websocket-protocol") !== subprotocol) {
 		return false
 	}
+	const data = WsxSocket.onUpgrade()
 	return server.upgrade(request, {
 		headers: options?.headers,
-		data: {
-			...(options?.data ?? {}),
-			[socketSymbol]: null,
-			[idSymbol]: "",
-		},
+		data: !options?.data
+			? data
+			: {
+					...options.data,
+					...data,
+				},
 	})
 }
