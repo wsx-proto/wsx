@@ -34,7 +34,7 @@ export class WsxSocket<Ws extends WsxRawSocket = WsxRawSocket> {
 	/**
 	 * Prepare data, js object schema optimisation
 	 */
-	static onUpgrade() {
+	static onUpgrade(): object {
 		return {
 			[socketSymbol]: null,
 			[idSymbol]: "",

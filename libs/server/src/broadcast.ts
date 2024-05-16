@@ -40,7 +40,7 @@ export class Broadcast {
 }
 
 export class BroadcastsManager {
-	broadcasts = new Map<string, Broadcast>()
+	broadcasts: Map<string, Broadcast> = new Map()
 
 	remove(topic: string) {
 		this.broadcasts.delete(topic)
@@ -48,7 +48,7 @@ export class BroadcastsManager {
 }
 
 export class LocalBroadcastsManager extends BroadcastsManager {
-	topic(topic: string) {
+	topic(topic: string): Broadcast {
 		const existingBroadcast = this.broadcasts.get(topic)
 		if (existingBroadcast) return existingBroadcast
 

@@ -149,7 +149,7 @@ export class Wsx<
 	router: Map<string, RPCRoute<ServerRpcHandler>> = new Map()
 	events: Map<string, RPCOptions> = new Map()
 	store: Store = new Store()
-	sockets = new Map<string, WsxSocket>()
+	sockets: Map<string, WsxSocket> = new Map()
 	private handler: WsxHandler
 	server?: Server
 
