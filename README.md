@@ -7,7 +7,7 @@ Websocket framework
 - [ ] Hooks
 - [ ] MessagePack compression
 - [x] RPC calls
-- [ ] PubSub
+- [x] PubSub
 - [ ] Pub broadcasting via Redis Streams
 - [x] End-to-end ts
 - [x] Validation

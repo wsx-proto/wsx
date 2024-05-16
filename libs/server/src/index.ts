@@ -17,7 +17,6 @@ import { RoutingProxy, Store } from "./proxy"
 import type { AppendTypingPrefix, ConsumeTyping, PrepareTyping } from "./types"
 
 import type { Serve, Server, ServerWebSocket, WebSocketHandler } from "bun"
-import type { GenericAction } from "../../shared/src/proto"
 import { roomRemoveSymbol } from "./broadcast"
 import { WsxSocket, idSymbol, roomsSymbol, sendSymbol } from "./socket"
 export { WsxSocket } from "./socket"
@@ -62,7 +61,7 @@ export class WsxHandler implements WebSocketHandler {
 
 	async message(raw: ServerWebSocket, message: string | Buffer): Promise<void> {
 		const ws = WsxSocket.reuse(raw as any)
-		const action: GenericAction = JSON.parse(message as string)
+		const action: Proto.GenericAction = JSON.parse(message as string)
 		const [actionType] = action
 
 		const isEmit = actionType === Proto.actionTypes.emit
