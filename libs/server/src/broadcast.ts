@@ -3,6 +3,9 @@ import { type WsxSocket, roomsSymbol, sendSymbol } from "./socket"
 export const roomPublishSymbol = Symbol("roomPublish")
 export const roomRemoveSymbol = Symbol("roomRemove")
 
+/**
+ * Pub/Sub broadcast
+ */
 export class Broadcast {
 	sockets: Set<WsxSocket> = new Set()
 
@@ -47,6 +50,9 @@ export class BroadcastsManager {
 	}
 }
 
+/**
+ * Local manager for broadcasts. Shares actions only across the same server instance
+ */
 export class LocalBroadcastsManager extends BroadcastsManager {
 	topic(topic: string): Broadcast {
 		const existingBroadcast = this.broadcasts.get(topic)

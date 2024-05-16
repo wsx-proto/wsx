@@ -32,6 +32,7 @@ export type WsxOptions<Prefix extends string = ""> = {
 	prefix?: Prefix
 }
 
+/** Any Wsx instance */
 export type AnyWsx = Wsx<any, any, any>
 
 type RoutesBase = Record<string, unknown>
