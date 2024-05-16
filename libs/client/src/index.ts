@@ -5,7 +5,7 @@ export type { ClientType, ClientConfig, ClientWs } from "./types"
 import { Proto, type RPCHandler, isPromise, subprotocol } from "@wsx/shared"
 
 type Method = (typeof methods)[number]
-const methods = ["call", "send", "listen", "unlisten"] as const
+const methods = ["call", "emit", "listen", "unlisten"] as const
 
 const locals = ["localhost", "127.0.0.1", "0.0.0.0"]
 
@@ -58,23 +58,22 @@ const RoutingProxy = (
 			}
 
 			const id = store.id++
-			const withResponse = method === "call"
-			const rpcRequest: Proto.RpcRequest = [
-				Proto.actionTypes.rpc.request,
-				id,
-				path,
-				withResponse,
-				body,
-			]
-			ws.send(JSON.stringify(rpcRequest))
+			let actionToSend: Proto.Emit | Proto.RpcRequest
+			if (method === "emit") {
+				actionToSend = [Proto.actionTypes.emit, path, body]
+			} else {
+				actionToSend = [Proto.actionTypes.rpc.request, id, path, body]
+			}
+			ws.send(JSON.stringify(actionToSend))
 
-			if (!withResponse) return
-			let resolve: Resolve
-			const responsePromise = new Promise((innerResolve) => {
-				resolve = innerResolve
-			})
-			store.resolvers.set(id, resolve!)
-			return responsePromise
+			if (method === "call") {
+				let resolve: Resolve
+				const responsePromise = new Promise((innerResolve) => {
+					resolve = innerResolve
+				})
+				store.resolvers.set(id, resolve!)
+				return responsePromise
+			}
 		},
 	}) as any
 
@@ -106,10 +105,10 @@ export const Client = <
 		})
 
 		ws.addEventListener("message", async ({ data }) => {
-			const response = JSON.parse(data) as Proto.RpcResponse | Proto.RpcRequest
-			const [action] = response
-			if (action === Proto.actionTypes.rpc.response) {
-				const [, id, body] = response
+			const action = JSON.parse(data) as Proto.GenericAction
+			const [actionType] = action
+			if (Proto.isRpcResponse(action)) {
+				const [, id, body] = action
 				const resolve = store.resolvers.get(id)
 				if (!resolve) {
 					console.error("No resolver for call", id)
@@ -118,24 +117,37 @@ export const Client = <
 				resolve(body)
 				return
 			}
-			if (action === Proto.actionTypes.rpc.request) {
-				const [, id, path, withResponse, body] = response
+
+			const isEmit = actionType === Proto.actionTypes.emit
+			const isRpcRequest = actionType === Proto.actionTypes.rpc.request
+			if (isEmit || isRpcRequest) {
+				let id: number | undefined
+				let path: string
+				let body: unknown
+				if (isEmit) {
+					;[, path, body] = action
+				} else {
+					;[, id, path, body] = action
+				}
+
 				const handler = store.listeners.get(path)
 				if (!handler) {
 					console.error("No listener for path", path)
 					return
 				}
 				const rawResponse = handler({ ws, body })
-				if (!withResponse) return
-				const responseBody = isPromise(rawResponse)
-					? await rawResponse
-					: rawResponse
-				const rpcResponse: Proto.RpcResponse = [
-					Proto.actionTypes.rpc.response,
-					id,
-					responseBody,
-				]
-				ws.send(JSON.stringify(rpcResponse))
+				if (isRpcRequest) {
+					const responseBody = isPromise(rawResponse)
+						? await rawResponse
+						: rawResponse
+					ws.send(
+						JSON.stringify([
+							Proto.actionTypes.rpc.response.success,
+							id!,
+							responseBody,
+						] satisfies Proto.RpcResponse["success"]),
+					)
+				}
 				return
 			}
 		})

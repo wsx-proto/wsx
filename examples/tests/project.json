@@ -1,0 +1,21 @@
+{
+	"$schema": "../../node_modules/nx/schemas/project-schema.json",
+	"name": "tests",
+	"projectType": "application",
+	"sourceRoot": "{projectRoot}/src",
+	"targets": {
+		"check": {},
+		"start": {
+			"command": "bun src/index.ts",
+			"options": {
+				"cwd": "{projectRoot}"
+			}
+		},
+		"dev": {
+			"command": "bun --watch --inspect-wait=ws://localhost:6499/wsx-example src/index.ts",
+			"options": {
+				"cwd": "{projectRoot}"
+			}
+		}
+	}
+}

@@ -17,12 +17,13 @@ import { RoutingProxy, Store } from "./proxy"
 import type { AppendTypingPrefix, ConsumeTyping, PrepareTyping } from "./types"
 
 import type { Serve, Server, ServerWebSocket, WebSocketHandler } from "bun"
+import type { GenericAction } from "../../shared/src/proto"
 import { roomRemoveSymbol } from "./broadcast"
 import { WsxSocket, idSymbol, roomsSymbol, sendSymbol } from "./socket"
 export { WsxSocket } from "./socket"
 export {
 	Broadcast,
-	LocalBroadcasts,
+	LocalBroadcastsManager,
 } from "./broadcast"
 
 /**
@@ -61,15 +62,33 @@ export class WsxHandler implements WebSocketHandler {
 
 	async message(raw: ServerWebSocket, message: string | Buffer): Promise<void> {
 		const ws = WsxSocket.reuse(raw as any)
-		const request: Proto.RpcRequest | Proto.RpcResponse = JSON.parse(
-			message as string,
-		)
-		const [action] = request
-		if (action === Proto.actionTypes.rpc.request) {
-			const [, id, path, withResponse, body] = request
+		const action: GenericAction = JSON.parse(message as string)
+		const [actionType] = action
+
+		const isEmit = actionType === Proto.actionTypes.emit
+		const isRpcRequest = actionType === Proto.actionTypes.rpc.request
+
+		if (isEmit || isRpcRequest) {
+			let id: number | undefined
+			let path: string
+			let body: unknown
+			if (isEmit) {
+				;[, path, body] = action
+			} else {
+				;[, id, path, body] = action
+			}
+
 			const route = this.wsx.router.get(path)
 			if (!route) {
-				//todo
+				console.debug("Route not found", { path })
+				if (isRpcRequest) {
+					ws[sendSymbol]([
+						Proto.actionTypes.rpc.response.fail,
+						id!,
+						"Route not found",
+						{ path },
+					] satisfies Proto.RpcResponse["fail"])
+				}
 				return
 			}
 
@@ -77,27 +96,36 @@ export class WsxHandler implements WebSocketHandler {
 			if (bodySchema) {
 				const validationResult = await validate(bodySchema, body)
 				if (!validationResult.success) {
-					console.error("validation failed", validationResult)
+					console.debug("Validation failed", validationResult.issues)
+					if (isRpcRequest) {
+						ws[sendSymbol]([
+							Proto.actionTypes.rpc.response.fail,
+							id!,
+							"Validation failed",
+							validationResult.issues,
+						] satisfies Proto.RpcResponse["fail"])
+					}
 					return
 				}
 			}
 
 			const proxy = RoutingProxy(route.prefix, ws as any, this.wsx)
 			const rawResponse = route.handler({ ws, body, events: proxy })
-			if (!withResponse) return
-			const response = isPromise(rawResponse) ? await rawResponse : rawResponse
-
-			const rpcResponse: Proto.RpcResponse = [
-				Proto.actionTypes.rpc.response,
-				id,
-				response,
-			]
-			ws[sendSymbol](rpcResponse)
+			if (isRpcRequest) {
+				const response = isPromise(rawResponse)
+					? await rawResponse
+					: rawResponse
+				ws[sendSymbol]([
+					Proto.actionTypes.rpc.response.success,
+					id!,
+					response,
+				] satisfies Proto.RpcResponse["success"])
+			}
 			return
 		}
 
-		if (action === Proto.actionTypes.rpc.response) {
-			const [, id, body] = request
+		if (Proto.isRpcResponse(action)) {
+			const [, id, body] = action
 			const resolve = this.wsx.store.resolvers.get(id)
 			if (!resolve) {
 				console.error("No resolver for call", id)
@@ -123,6 +151,7 @@ export class Wsx<
 	store: Store = new Store()
 	sockets = new Map<string, WsxSocket>()
 	private handler: WsxHandler
+	server?: Server
 
 	constructor(options?: WsxOptions<Prefix>) {
 		this.handler = new WsxHandler(this)
@@ -151,7 +180,7 @@ export class Wsx<
 		},
 	): this {
 		const websocket = this.attach()
-		Bun.serve({
+		this.server = Bun.serve({
 			port,
 
 			fetch(request, server) {

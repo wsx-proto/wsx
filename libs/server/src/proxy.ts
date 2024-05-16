@@ -5,7 +5,7 @@ import { type WsxSocket, sendSymbol } from "./socket"
 import type { SendOptions } from "./types"
 
 type Method = (typeof methods)[number]
-const methods = ["call", "send"] as const
+const methods = ["call", "emit"] as const
 
 type Resolve = (response: unknown) => void
 
@@ -48,17 +48,14 @@ export const RoutingProxy = (
 				}
 
 				const id = wsx.store.id++
-				const withResponse = method === "call"
-				const rpcRequest: Proto.RpcRequest = [
+				const action: Proto.RpcRequest = [
 					Proto.actionTypes.rpc.request,
 					id,
 					path,
-					withResponse,
 					body,
 				]
-				sendTo[sendSymbol](rpcRequest)
+				sendTo[sendSymbol](action)
 
-				if (!withResponse) return
 				let resolve: Resolve
 				const responsePromise = new Promise((innerResolve) => {
 					resolve = innerResolve
@@ -67,28 +64,23 @@ export const RoutingProxy = (
 				return responsePromise
 			}
 
-			// emit
-			const id = wsx.store.id++
-			const rpcRequest: Proto.RpcRequest = [
-				Proto.actionTypes.rpc.request,
-				id,
-				path,
-				false,
-				body,
-			]
+			if (method === "emit") {
+				const id = wsx.store.id++
+				const action: Proto.Emit = [Proto.actionTypes.emit, path, body]
 
-			if (!options) {
-				ws[sendSymbol](rpcRequest)
-				return
-			}
+				if (!options) {
+					ws[sendSymbol](action)
+					return
+				}
 
-			if ("id" in options && options.id) {
-				wsx.sockets.get(options.id)![sendSymbol](rpcRequest)
-				return
-			}
+				if ("id" in options && options.id) {
+					wsx.sockets.get(options.id)![sendSymbol](action)
+					return
+				}
 
-			if ("broadcast" in options && options.broadcast) {
-				options.broadcast[roomPublishSymbol](rpcRequest, ws)
+				if ("broadcast" in options && options.broadcast) {
+					options.broadcast[roomPublishSymbol](action, ws)
+				}
 			}
 		},
 	}) as any

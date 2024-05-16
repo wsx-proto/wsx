@@ -1,0 +1,19 @@
+{
+  "name": "tests",
+	"private": true,
+  "module": "src/index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+	"dependencies": {
+		"@wsx/server": "workspace:*",
+		"@sinclair/typebox": "0.32.30",
+		"@typeschema/typebox": "^0.13.4",
+		"@wsx/client": "workspace:*",
+		"@faker-js/faker": "^8.4.1"
+	}
+}

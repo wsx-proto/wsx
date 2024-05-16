@@ -3,10 +3,6 @@ import { type WsxSocket, roomsSymbol, sendSymbol } from "./socket"
 export const roomPublishSymbol = Symbol("roomPublish")
 export const roomRemoveSymbol = Symbol("roomRemove")
 
-type BroadcastsManager = {
-	remove(topic: string): void
-}
-
 export class Broadcast {
 	sockets: Set<WsxSocket> = new Set()
 
@@ -43,24 +39,21 @@ export class Broadcast {
 	}
 }
 
-export function LocalBroadcasts() {
-	const broadcasts = new Map<string, Broadcast>()
+export class BroadcastsManager {
+	broadcasts = new Map<string, Broadcast>()
 
-	return new Proxy<Record<string, Broadcast>>(
-		{},
-		{
-			get(_, topic: string) {
-				let broadcast: Broadcast
-				if (!broadcasts.has(topic)) {
-					broadcasts.set(
-						topic,
-						new Broadcast(topic, {
-							remove: (topic) => broadcasts.delete(topic),
-						}),
-					)
-				}
-				return broadcasts.get(topic)
-			},
-		},
-	)
+	remove(topic: string) {
+		this.broadcasts.delete(topic)
+	}
+}
+
+export class LocalBroadcastsManager extends BroadcastsManager {
+	topic(topic: string) {
+		const existingBroadcast = this.broadcasts.get(topic)
+		if (existingBroadcast) return existingBroadcast
+
+		const newBroadcast = new Broadcast(topic, this)
+		this.broadcasts.set(topic, newBroadcast)
+		return newBroadcast
+	}
 }
