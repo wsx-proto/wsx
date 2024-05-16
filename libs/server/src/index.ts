@@ -80,7 +80,7 @@ export class WsxHandler implements WebSocketHandler {
 
 			const route = this.wsx.router.get(path)
 			if (!route) {
-				console.debug("Route not found", { path })
+				// console.debug("Route not found", { path })
 				if (isRpcRequest) {
 					ws[sendSymbol]([
 						Proto.actionTypes.rpc.response.fail,
@@ -96,7 +96,7 @@ export class WsxHandler implements WebSocketHandler {
 			if (bodySchema) {
 				const validationResult = await validate(bodySchema, body)
 				if (!validationResult.success) {
-					console.debug("Validation failed", validationResult.issues)
+					// console.debug("Validation failed", validationResult.issues)
 					if (isRpcRequest) {
 						ws[sendSymbol]([
 							Proto.actionTypes.rpc.response.fail,

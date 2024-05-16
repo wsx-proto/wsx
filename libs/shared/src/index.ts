@@ -29,12 +29,19 @@ export type RPCOptions = {
 
 export type RpcResponse<Response = unknown> =
 	| {
-			data: Response
-			error?: undefined
+			status: "success"
+			body: Response
 	  }
 	| {
-			data?: undefined
-			error: unknown
+			status: "fail"
+			message: string
+			body: unknown
+	  }
+	| {
+			status: "error"
+			message: string
+			code?: number
+			body?: unknown
 	  }
 
 export function isObject(x: unknown): x is object {

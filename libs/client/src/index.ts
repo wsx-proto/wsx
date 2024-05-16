@@ -2,14 +2,20 @@ import type { Wsx } from "@wsx/server"
 import type { ClientConfig, ClientType } from "./types"
 export type { ClientType, ClientConfig, ClientWs } from "./types"
 
-import { Proto, type RPCHandler, isPromise, subprotocol } from "@wsx/shared"
+import {
+	Proto,
+	type RPCHandler,
+	type RpcResponse,
+	isPromise,
+	subprotocol,
+} from "@wsx/shared"
 
 type Method = (typeof methods)[number]
 const methods = ["call", "emit", "listen", "unlisten"] as const
 
 const locals = ["localhost", "127.0.0.1", "0.0.0.0"]
 
-type Resolve = (response: unknown) => void
+type Resolve = (response: RpcResponse) => void
 
 class Store {
 	/**
@@ -108,13 +114,23 @@ export const Client = <
 			const action = JSON.parse(data) as Proto.GenericAction
 			const [actionType] = action
 			if (Proto.isRpcResponse(action)) {
-				const [, id, body] = action
+				const [, id] = action
 				const resolve = store.resolvers.get(id)
 				if (!resolve) {
 					console.error("No resolver for call", id)
 					return
 				}
-				resolve(body)
+
+				if (actionType === Proto.actionTypes.rpc.response.success) {
+					const [, , body] = action
+					resolve({ status: "success", body })
+				} else if (actionType === Proto.actionTypes.rpc.response.fail) {
+					const [, , message, body] = action
+					resolve({ status: "fail", body, message })
+				} else if (actionType === Proto.actionTypes.rpc.response.error) {
+					const [, , message, body, code] = action
+					resolve({ status: "error", body, message, code })
+				}
 				return
 			}
 
