@@ -5,9 +5,9 @@
   "workspaces": ["examples/*", "libs/*"],
   "devDependencies": {
     "@biomejs/biome": "^1.7.3",
-    "@evilmartians/lefthook": "^1.6.11",
+    "@evilmartians/lefthook": "^1.6.12",
     "npm-check-updates": "^16.14.20",
-    "nx": "19.0.4"
+    "nx": "19.0.6"
   },
 	"trustedDependencies": [
 		"@biomejs/biome",
