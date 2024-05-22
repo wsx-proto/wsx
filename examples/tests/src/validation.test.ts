@@ -1,28 +1,26 @@
 import { beforeAll, expect, test } from "bun:test"
 import { faker } from "@faker-js/faker"
 import { type Static, Type } from "@sinclair/typebox"
-import { Client } from "@wsx/client"
+import { Client, type ClientType } from "@wsx/client"
 import { Wsx } from "@wsx/server"
 
 type ValidBody = Static<typeof ValidBody>
 const ValidBody = Type.Object({ message: Type.String() })
 
-async function initialize() {
-	const wsx = new Wsx()
+type Server = ReturnType<typeof Server>
+const Server = () =>
+	new Wsx()
 		.route("/validate", ({ body }) => body, {
 			body: ValidBody,
 			response: Type.Object({ message: Type.String() }),
 		})
 		.listen(0)
 
-	const { port } = wsx.server!
-
-	return await Client<typeof wsx>(`ws://localhost:${port}`)
-}
-
-let routes: Awaited<ReturnType<typeof initialize>>["routes"]
+let routes: ClientType<Server>
 beforeAll(async () => {
-	const client = await initialize()
+	const wsx = Server()
+	const { port } = wsx.server!
+	const client = await Client<typeof wsx>(`ws://localhost:${port}`)
 	routes = client.routes
 })
 

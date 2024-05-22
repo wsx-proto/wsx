@@ -16,6 +16,12 @@
 			"options": {
 				"cwd": "{projectRoot}"
 			}
+		},
+		"test": {
+			"command": "bun test",
+			"options": {
+				"cwd": "{projectRoot}"
+			}
 		}
 	}
 }
