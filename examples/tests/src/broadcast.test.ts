@@ -2,7 +2,7 @@ import { beforeAll, expect, mock, test } from "bun:test"
 import { faker } from "@faker-js/faker"
 import { Type } from "@sinclair/typebox"
 import { Client } from "@wsx/client"
-import { LocalBroadcast, type Topic, Wsx } from "@wsx/server"
+import { Localcast, type Topic, Wsx } from "@wsx/server"
 
 let clientA: TestClient
 let clientB: TestClient
@@ -37,8 +37,8 @@ beforeAll(async () => {
 	clientB = await TestClient(url)
 	clientC = await TestClient(url)
 
-	const broadcastManager = new LocalBroadcast()
-	topic = broadcastManager.topic("test")
+	const localcast = new Localcast()
+	topic = localcast.topic("test")
 })
 
 test("valid", async () => {

@@ -20,7 +20,7 @@ import type { Serve, Server, ServerWebSocket, WebSocketHandler } from "bun"
 import { topicSymbols } from "./broadcast"
 import { WsxSocket, socketSymbols } from "./socket"
 export { WsxSocket } from "./socket"
-export { Topic, LocalBroadcast } from "./broadcast"
+export { Topic, Localcast } from "./broadcast"
 
 /**
  * Options for Wsx server
