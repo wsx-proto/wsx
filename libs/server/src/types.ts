@@ -1,5 +1,5 @@
 import type { Prettify, RpcResponse } from "@wsx/shared"
-import type { Broadcast } from "./broadcast"
+import type { Topic } from "./broadcast"
 
 export type ConsumeTyping<in out Route extends Record<string, any>> = Omit<
 	{
@@ -39,7 +39,7 @@ export type ConsumeTyping<in out Route extends Record<string, any>> = Omit<
 
 export type CallOptions = { id?: string }
 
-export type EmitOptions = { id?: string } | { broadcast?: Broadcast }
+export type EmitOptions = { id?: string } | { topic?: Topic }
 
 export type SendOptions = CallOptions | EmitOptions
 

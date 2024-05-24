@@ -17,13 +17,10 @@ import { RoutingProxy, Store } from "./proxy"
 import type { AppendTypingPrefix, ConsumeTyping, PrepareTyping } from "./types"
 
 import type { Serve, Server, ServerWebSocket, WebSocketHandler } from "bun"
-import { roomRemoveSymbol } from "./broadcast"
-import { WsxSocket, idSymbol, roomsSymbol, sendSymbol } from "./socket"
+import { topicSymbols } from "./broadcast"
+import { WsxSocket, socketSymbols } from "./socket"
 export { WsxSocket } from "./socket"
-export {
-	Broadcast,
-	LocalBroadcastsManager,
-} from "./broadcast"
+export { Topic, LocalBroadcast } from "./broadcast"
 
 /**
  * Options for Wsx server
@@ -51,11 +48,11 @@ export class WsxHandler implements WebSocketHandler {
 
 	close(raw: ServerWebSocket): void {
 		const socketRaw = raw as unknown as WsxSocket["raw"]
-		this.wsx.sockets.delete(socketRaw.data[idSymbol]!)
-		const rooms = socketRaw.data[roomsSymbol]
+		this.wsx.sockets.delete(socketRaw.data[socketSymbols.id]!)
+		const rooms = socketRaw.data[socketSymbols.topics]
 		if (rooms) {
 			for (const room of rooms) {
-				room[roomRemoveSymbol](raw as any)
+				room[topicSymbols.remove](raw as any)
 			}
 		}
 	}
@@ -82,7 +79,7 @@ export class WsxHandler implements WebSocketHandler {
 			if (!route) {
 				// console.debug("Route not found", { path })
 				if (isRpcRequest) {
-					ws[sendSymbol]([
+					ws[socketSymbols.send]([
 						Proto.actionTypes.rpc.response.fail,
 						id!,
 						"Route not found",
@@ -98,7 +95,7 @@ export class WsxHandler implements WebSocketHandler {
 				if (!validationResult.success) {
 					// console.debug("Validation failed", validationResult.issues)
 					if (isRpcRequest) {
-						ws[sendSymbol]([
+						ws[socketSymbols.send]([
 							Proto.actionTypes.rpc.response.fail,
 							id!,
 							"Validation failed",
@@ -115,7 +112,7 @@ export class WsxHandler implements WebSocketHandler {
 				const response = isPromise(rawResponse)
 					? await rawResponse
 					: rawResponse
-				ws[sendSymbol]([
+				ws[socketSymbols.send]([
 					Proto.actionTypes.rpc.response.success,
 					id!,
 					response,

@@ -34,17 +34,5 @@ export type Prettify<T> = {
 	[K in keyof T]: T[K]
 } & {}
 
-export type TreatyToPath<T, Path extends string = ""> = UnionToIntersect<
-	T extends Record<string, unknown>
-		? {
-				[K in keyof T]: T[K] extends AnyTypedRoute
-					? { [path in Path]: { [method in K]: T[K] } }
-					: unknown extends T[K]
-						? { [path in Path]: { [method in K]: T[K] } }
-						: TreatyToPath<T[K], `${Path}/${K & string}`>
-			}[keyof T]
-		: {}
->
-
 export type MaybeArray<T> = T | T[]
 export type MaybePromise<T> = T | Promise<T>

@@ -2,24 +2,24 @@ import { beforeAll, expect, mock, test } from "bun:test"
 import { faker } from "@faker-js/faker"
 import { Type } from "@sinclair/typebox"
 import { Client } from "@wsx/client"
-import { type Broadcast, LocalBroadcastsManager, Wsx } from "@wsx/server"
+import { LocalBroadcast, type Topic, Wsx } from "@wsx/server"
 
 let clientA: TestClient
 let clientB: TestClient
 let clientC: TestClient
-let room: Broadcast
+let topic: Topic
 
 type Server = ReturnType<typeof Server>
 const Server = () =>
 	new Wsx()
 		.event("/rec", { body: Type.String() })
 		.route("/sub", ({ ws }) => {
-			room.subscribe(ws)
+			topic.subscribe(ws)
 		})
 		.route(
 			"/pub",
 			({ body: message, events }) => {
-				events.rec.emit(message, { broadcast: room })
+				events.rec.emit(message, { topic })
 			},
 			{ body: Type.String() },
 		)
@@ -37,8 +37,8 @@ beforeAll(async () => {
 	clientB = await TestClient(url)
 	clientC = await TestClient(url)
 
-	const broadcastManager = new LocalBroadcastsManager()
-	room = broadcastManager.topic("test")
+	const broadcastManager = new LocalBroadcast()
+	topic = broadcastManager.topic("test")
 })
 
 test("valid", async () => {

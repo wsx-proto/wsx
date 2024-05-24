@@ -1,15 +1,12 @@
 import type { ServerWebSocket } from "bun"
-import type { Broadcast } from "./broadcast"
-
-export const socketSymbol = Symbol("socket")
-export const idSymbol = Symbol("id")
-export const sendSymbol = Symbol("send")
-export const roomsSymbol = Symbol("rooms")
+import type { Topic } from "../broadcast"
+import * as symbols from "./symbols"
+export { symbols as socketSymbols }
 
 export type WsxRawSocket = ServerWebSocket<{
-	[socketSymbol]: WsxSocket
-	[idSymbol]?: string
-	[roomsSymbol]?: Set<Broadcast>
+	[symbols.socket]: WsxSocket
+	[symbols.id]?: string
+	[symbols.topics]?: Set<Topic>
 }>
 
 /**
@@ -25,10 +22,8 @@ export class WsxSocket<Ws extends WsxRawSocket = WsxRawSocket> {
 	}
 
 	static reuse(ws: WsxRawSocket): WsxSocket {
-		if (!ws.data[socketSymbol]) {
-			ws.data[socketSymbol] = new WsxSocket(ws)
-		}
-		return ws.data[socketSymbol]
+		ws.data[symbols.socket] ??= new WsxSocket(ws)
+		return ws.data[symbols.socket]
 	}
 
 	/**
@@ -36,21 +31,21 @@ export class WsxSocket<Ws extends WsxRawSocket = WsxRawSocket> {
 	 */
 	static onUpgrade(): object {
 		return {
-			[socketSymbol]: null,
-			[idSymbol]: "",
-			[roomsSymbol]: null,
+			[symbols.socket]: null,
+			[symbols.id]: "",
+			[symbols.topics]: null,
 		}
 	}
 
 	get id(): string {
-		return this.raw.data[idSymbol]!
+		return this.raw.data[symbols.id]!
 	}
 
 	set id(value: string) {
-		this.raw.data[idSymbol] = value
+		this.raw.data[symbols.id] = value
 	}
 
-	[sendSymbol](data: unknown): void {
+	[symbols.send](data: unknown): void {
 		if (Buffer.isBuffer(data)) {
 			this.raw.send(data)
 			return

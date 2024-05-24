@@ -1,7 +1,7 @@
 import { Proto } from "@wsx/shared"
 import type { AnyWsx } from "."
-import { roomPublishSymbol } from "./broadcast"
-import { type WsxSocket, sendSymbol } from "./socket"
+import { topicSymbols } from "./broadcast"
+import { type WsxSocket, socketSymbols } from "./socket"
 import type { SendOptions } from "./types"
 
 type Method = (typeof methods)[number]
@@ -54,7 +54,7 @@ export const RoutingProxy = (
 					path,
 					body,
 				]
-				sendTo[sendSymbol](action)
+				sendTo[socketSymbols.send](action)
 
 				let resolve: Resolve
 				const responsePromise = new Promise((innerResolve) => {
@@ -69,17 +69,17 @@ export const RoutingProxy = (
 				const action: Proto.Emit = [Proto.actionTypes.emit, path, body]
 
 				if (!options) {
-					ws[sendSymbol](action)
+					ws[socketSymbols.send](action)
 					return
 				}
 
 				if ("id" in options && options.id) {
-					wsx.sockets.get(options.id)![sendSymbol](action)
+					wsx.sockets.get(options.id)![socketSymbols.send](action)
 					return
 				}
 
-				if ("broadcast" in options && options.broadcast) {
-					options.broadcast[roomPublishSymbol](action, ws)
+				if ("topic" in options && options.topic) {
+					options.topic[topicSymbols.publish](action, ws)
 				}
 			}
 		},

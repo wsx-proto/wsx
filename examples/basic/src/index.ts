@@ -1,10 +1,8 @@
 import { Type } from "@sinclair/typebox"
 import { Client } from "@wsx/client"
-import { LocalBroadcastsManager, Wsx } from "@wsx/server"
+import { LocalBroadcast, Wsx } from "@wsx/server"
 
-const localcast = new LocalBroadcastsManager()
-
-localcast.topic("board:15")
+const localcast = new LocalBroadcast()
 
 const deep = new Wsx({ prefix: "/deep" }).route("/nested", () => {
 	console.log("nested")
