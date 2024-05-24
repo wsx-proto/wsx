@@ -1,5 +1,6 @@
 import type { ServerWebSocket } from "bun"
 import type { Topic } from "../broadcast"
+import { genId } from "../utils/gen-id"
 import * as symbols from "./symbols"
 export { symbols as socketSymbols }
 
@@ -14,11 +15,7 @@ export type WsxRawSocket = ServerWebSocket<{
  */
 export class WsxSocket<Ws extends WsxRawSocket = WsxRawSocket> {
 	constructor(public raw: Ws) {
-		if (!this.id) {
-			const array = new Uint32Array(1)
-			crypto.getRandomValues(array)
-			this.id = array[0].toString()
-		}
+		this.id ??= genId()
 	}
 
 	static reuse(ws: WsxRawSocket): WsxSocket {

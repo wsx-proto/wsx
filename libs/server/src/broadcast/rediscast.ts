@@ -1,5 +1,6 @@
 import { Redis, type RedisOptions } from "ioredis"
 import type { WsxSocket } from "../socket"
+import { genId } from "../utils/gen-id"
 import { Broadcast, broadcastSymbols } from "./broadcast"
 import type { Topic } from "./topic"
 
@@ -7,6 +8,7 @@ import type { Topic } from "./topic"
  * Redis broadcast. Shares actions via Redis Pub/Sub
  */
 export class Rediscast extends Broadcast {
+	private id: string = genId()
 	redis: Redis
 	prefix: string
 
