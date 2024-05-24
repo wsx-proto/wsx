@@ -5,6 +5,7 @@
 	"sourceRoot": "{projectRoot}/src",
 	"targets": {
 		"check": {},
+		"types": {},
 		"start": {
 			"command": "bun src/index.ts",
 			"options": {

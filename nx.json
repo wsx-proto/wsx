@@ -8,6 +8,13 @@
 				"cwd": "{projectRoot}"
 			}
 		},
+		"types": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "tsc --noEmit",
+				"cwd": "{projectRoot}"
+			}
+		},
 		"publish": {
 			"executor": "nx:run-commands",
 			"options": {
