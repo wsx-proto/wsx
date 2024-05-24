@@ -10,9 +10,10 @@
   },
   "dependencies": {
     "@typeschema/main": "^0.13.9",
-		"@wsx/shared": "workspace:*"
+    "@wsx/shared": "workspace:*",
+    "ioredis": "^5.4.1"
   },
-	"dependenciesMeta": {
+  "dependenciesMeta": {
     "@typeschema/main": {
       "injected": true
     }

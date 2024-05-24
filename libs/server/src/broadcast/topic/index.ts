@@ -2,6 +2,7 @@ import { type WsxSocket, socketSymbols } from "../../socket"
 import type { Broadcast } from "../broadcast"
 import * as symbols from "./symbols"
 export { symbols as topicSymbols }
+import * as broadcastSymbols from "../symbols"
 
 /**
  * Pub/Sub topic
@@ -33,9 +34,6 @@ export class Topic {
 	}
 
 	[symbols.publish](data: unknown, except?: WsxSocket) {
-		for (const socket of this.sockets) {
-			if (socket === except) continue
-			socket[socketSymbols.send](data)
-		}
+		this.broadcast[broadcastSymbols.publish](this, data, except)
 	}
 }
