@@ -8,7 +8,6 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    container: ubuntu
     services:
       redis:
         image: redis/redis-stack-server
