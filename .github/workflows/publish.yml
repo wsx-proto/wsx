@@ -8,9 +8,17 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    container: ubuntu
+    services:
+      redis:
+        image: redis/redis-stack-server
+        ports:
+          - "6379:6379"
     permissions:
       contents: read
       id-token: write # The OIDC ID token is used for authentication with JSR.
+    env:
+      REDIS_HOST: redis
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v1

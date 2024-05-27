@@ -31,22 +31,22 @@ export class Rediscast extends Broadcast {
 		})
 	}
 
-	async create(key: string) {
+	async create(key: string): Promise<Topic> {
 		const topic = super.create(key)
 		await this.subscriber.subscribe(key)
 		return topic
 	}
 
-	remove(topic: string) {
+	remove(topic: string): void {
 		super.remove(topic)
-		this.subscriber.sunsubscribe(topic)
+		this.subscriber.unsubscribe(topic)
 	}
 
 	async [broadcastSymbols.publish](
 		topic: Topic,
 		data: unknown,
 		except?: WsxSocket,
-	) {
+	): Promise<void> {
 		super[broadcastSymbols.publish](topic, data, except)
 		const message = JSON.stringify([this.id, data] satisfies TransportMessage)
 		await this.publicator.publish(topic.key, message)
