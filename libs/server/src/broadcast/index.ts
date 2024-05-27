@@ -3,3 +3,4 @@ export { symbols as topicSymbols }
 
 export * from "./broadcast"
 export * from "./topic"
+export * from "./rediscast"

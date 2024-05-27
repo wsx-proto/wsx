@@ -4,49 +4,42 @@ import { genId } from "../utils/gen-id"
 import { Broadcast, broadcastSymbols } from "./broadcast"
 import type { Topic } from "./topic"
 
+type TransportMessage = [senderId: string, data: unknown]
+
 /**
  * Redis broadcast. Shares actions via Redis Pub/Sub
  */
 export class Rediscast extends Broadcast {
 	private id: string = genId()
-	redis: Redis
-	prefix: string
+	private subscriber: Redis
+	private publicator: Redis
 
-	constructor({
-		redis,
-		prefix = "wsx__",
-	}: { redis: RedisOptions; prefix?: string }) {
+	constructor(redisOptions: RedisOptions) {
 		super()
-		this.redis = new Redis(redis)
-		this.prefix = prefix
+		this.subscriber = new Redis(redisOptions)
+		this.publicator = new Redis(redisOptions)
 
-		this.redis.on("message", (channel, message) => {
-			const key = this.unredisKey(channel)
-			const topic = this.topics.get(key)
+		this.subscriber.on("message", (channel, message) => {
+			const topic = this.topics.get(channel)
 			if (topic) {
-				this[broadcastSymbols.publish](topic, JSON.parse(message))
+				const [senderId, data] = JSON.parse(message) as TransportMessage
+				if (senderId === this.id) {
+					return
+				}
+				super[broadcastSymbols.publish](topic, data)
 			}
 		})
 	}
 
-	private redisKey(key: string) {
-		return `${this.prefix}${key}`
-	}
-
-	private unredisKey(redisKey: string) {
-		return redisKey.slice(this.prefix.length)
-	}
-
 	async create(key: string) {
-		const redisKey = this.redisKey(key)
-		const topic = super.create(redisKey)
-		await this.redis.ssubscribe(redisKey)
+		const topic = super.create(key)
+		await this.subscriber.subscribe(key)
 		return topic
 	}
 
 	remove(topic: string) {
 		super.remove(topic)
-		this.redis.sunsubscribe(this.redisKey(topic))
+		this.subscriber.sunsubscribe(topic)
 	}
 
 	async [broadcastSymbols.publish](
@@ -55,7 +48,7 @@ export class Rediscast extends Broadcast {
 		except?: WsxSocket,
 	) {
 		super[broadcastSymbols.publish](topic, data, except)
-		const redisKey = this.redisKey(topic.key)
-		await this.redis.spublish(redisKey, JSON.stringify(data))
+		const message = JSON.stringify([this.id, data] satisfies TransportMessage)
+		await this.publicator.publish(topic.key, message)
 	}
 }
