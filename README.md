@@ -4,7 +4,7 @@ Websocket framework
 # Features
 - [x] Router
 - [x] Plugin system
-- [ ] Hooks
+- [x] Lifecycle hooks
 - [ ] MessagePack compression
 - [x] RPC calls
 - [x] Pub/Sub
