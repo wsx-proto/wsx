@@ -23,6 +23,6 @@ beforeAll(async () => {
 test("valid", async () => {
 	const message = faker.lorem.sentence()
 	routes.some.emit(message)
-	await Bun.sleep(10)
+	await Bun.sleep(100)
 	expect(onEmit).toBeCalledWith(message)
 })
