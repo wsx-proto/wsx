@@ -8,8 +8,8 @@ import {
 	Proto,
 	type RPCHandler,
 	type RPCOptions,
-	type RPCRoute,
 	type ServerRpcHandler,
+	isObject,
 	isPromise,
 	subprotocol,
 } from "@wsx/shared"
@@ -18,6 +18,13 @@ import type { AppendTypingPrefix, ConsumeTyping, PrepareTyping } from "./types"
 
 import type { Serve, Server, ServerWebSocket, WebSocketHandler } from "bun"
 import { topicSymbols } from "./broadcast"
+import {
+	LifeCycleStore,
+	type OnError,
+	type OnHandle,
+	type OnRequest,
+	type OnResponse,
+} from "./life-cycle"
 import { WsxSocket, socketSymbols } from "./socket"
 export { WsxSocket } from "./socket"
 export { Topic, Localcast, Rediscast } from "./broadcast"
@@ -89,6 +96,10 @@ export class WsxHandler implements WebSocketHandler {
 				return
 			}
 
+			for (const hook of route.lifeCycle.onRequest) {
+				await hook({ body, ws })
+			}
+
 			const { body: bodySchema } = route
 			if (bodySchema) {
 				const validationResult = await validate(bodySchema, body)
@@ -106,12 +117,36 @@ export class WsxHandler implements WebSocketHandler {
 				}
 			}
 
+			for (const hook of route.lifeCycle.onHandle) {
+				await hook({ body, ws })
+			}
+
 			const proxy = RoutingProxy(route.prefix, ws as any, this.wsx)
-			const rawResponse = route.handler({ ws, body, events: proxy })
+			let response: unknown
+			try {
+				const rawResponse = route.handler({ ws, body, events: proxy })
+				response = isPromise(rawResponse) ? await rawResponse : rawResponse
+			} catch (error) {
+				for (const hook of route.lifeCycle.onError) {
+					await hook(ws, error)
+				}
+
+				ws[socketSymbols.send]([
+					Proto.actionTypes.rpc.response.error,
+					id!,
+					isObject(error) && typeof (error as any).message === "string"
+						? (error as any).message
+						: "Error occured during handling",
+					{ error },
+				] satisfies Proto.RpcResponse["error"])
+				return
+			}
+
 			if (isRpcRequest) {
-				const response = isPromise(rawResponse)
-					? await rawResponse
-					: rawResponse
+				for (const hook of route.lifeCycle.onResponse) {
+					await hook({ body, ws }, response)
+				}
+
 				ws[socketSymbols.send]([
 					Proto.actionTypes.rpc.response.success,
 					id!,
@@ -149,6 +184,7 @@ export class Wsx<
 	sockets: Map<string, WsxSocket> = new Map()
 	private handler: WsxHandler
 	server?: Server
+	lifeCycle: LifeCycleStore = new LifeCycleStore()
 
 	constructor(options?: WsxOptions<Prefix>) {
 		this.handler = new WsxHandler(this)
@@ -221,6 +257,7 @@ export class Wsx<
 			handler: handler as RPCHandler,
 			body: options?.body,
 			response: options?.response,
+			lifeCycle: this.lifeCycle.clone(),
 		})
 		return this as any
 	}
@@ -265,10 +302,33 @@ export class Wsx<
 			this.router.set(this.prefix + path, {
 				...route,
 				prefix: this.prefix + route.prefix,
+				lifeCycle: route.lifeCycle.clone().prepend(this.lifeCycle),
 			})
 		}
 
 		return this as any
+	}
+
+	// Life cycle methods
+
+	onRequest(handler: OnRequest): this {
+		this.lifeCycle.onRequest.push(handler)
+		return this
+	}
+
+	onHandle(handler: OnHandle): this {
+		this.lifeCycle.onHandle.push(handler)
+		return this
+	}
+
+	onResponse(handler: OnResponse): this {
+		this.lifeCycle.onResponse.push(handler)
+		return this
+	}
+
+	onError(handler: OnError): this {
+		this.lifeCycle.onError.push(handler)
+		return this
 	}
 }
 
@@ -290,3 +350,12 @@ function upgrade(
 				},
 	})
 }
+
+export type RPCRoute<Handler = RPCHandler> = {
+	/**
+	 * For events localisation
+	 */
+	prefix: string
+	handler: Handler
+	lifeCycle: LifeCycleStore
+} & RPCOptions

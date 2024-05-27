@@ -14,14 +14,6 @@ export type ServerRpcHandler = RPCHandler<
 	unknown
 >
 
-export type RPCRoute<Handler = RPCHandler> = {
-	/**
-	 * For events localisation
-	 */
-	prefix: string
-	handler: Handler
-} & RPCOptions
-
 export type RPCOptions = {
 	body?: AnySchema
 	response?: AnySchema
