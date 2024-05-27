@@ -17,7 +17,7 @@ jobs:
       contents: read
       id-token: write # The OIDC ID token is used for authentication with JSR.
     env:
-      REDIS_HOST: redis
+      REDIS_HOST: localhost
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v1
