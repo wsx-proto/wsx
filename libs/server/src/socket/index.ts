@@ -42,6 +42,10 @@ export class WsxSocket<Ws extends WsxRawSocket = WsxRawSocket> {
 		this.raw.data[symbols.id] = value
 	}
 
+	get data(): any {
+		return this.raw.data
+	}
+
 	[symbols.send](data: unknown): void {
 		if (Buffer.isBuffer(data)) {
 			this.raw.send(data)

@@ -96,8 +96,13 @@ export class WsxHandler implements WebSocketHandler {
 				return
 			}
 
-			for (const hook of route.lifeCycle.onRequest) {
-				await hook({ body, ws })
+			try {
+				for (const hook of route.lifeCycle.onRequest) {
+					await hook({ body, ws })
+				}
+			} catch (error) {
+				await this.handleError(route, ws, error, "fail", id)
+				return
 			}
 
 			const { body: bodySchema } = route
@@ -117,8 +122,13 @@ export class WsxHandler implements WebSocketHandler {
 				}
 			}
 
-			for (const hook of route.lifeCycle.onHandle) {
-				await hook({ body, ws })
+			try {
+				for (const hook of route.lifeCycle.onHandle) {
+					await hook({ body, ws })
+				}
+			} catch (error) {
+				await this.handleError(route, ws, error, "fail", id)
+				return
 			}
 
 			const proxy = RoutingProxy(route.prefix, ws as any, this.wsx)
@@ -127,18 +137,7 @@ export class WsxHandler implements WebSocketHandler {
 				const rawResponse = route.handler({ ws, body, events: proxy })
 				response = isPromise(rawResponse) ? await rawResponse : rawResponse
 			} catch (error) {
-				for (const hook of route.lifeCycle.onError) {
-					await hook(ws, error)
-				}
-
-				ws[socketSymbols.send]([
-					Proto.actionTypes.rpc.response.error,
-					id!,
-					isObject(error) && typeof (error as any).message === "string"
-						? (error as any).message
-						: "Error occured during handling",
-					{ error },
-				] satisfies Proto.RpcResponse["error"])
+				await this.handleError(route, ws, error, "error", id)
 				return
 			}
 
@@ -166,6 +165,40 @@ export class WsxHandler implements WebSocketHandler {
 			resolve(body)
 			return
 		}
+	}
+
+	async handleError(
+		route: RPCRoute<ServerRpcHandler>,
+		ws: WsxSocket,
+		error: unknown,
+		type: "fail" | "error",
+		id?: number,
+	): Promise<void> {
+		for (const hook of route.lifeCycle.onError) {
+			await hook(ws, error)
+		}
+
+		const message =
+			isObject(error) && typeof (error as any).message === "string"
+				? (error as any).message
+				: "Error occured during handling"
+
+		if (type === "fail") {
+			ws[socketSymbols.send]([
+				Proto.actionTypes.rpc.response.fail,
+				id!,
+				message,
+				{ error },
+			] satisfies Proto.RpcResponse["fail"])
+			return
+		}
+
+		ws[socketSymbols.send]([
+			Proto.actionTypes.rpc.response.error,
+			id!,
+			message,
+			{ error },
+		] satisfies Proto.RpcResponse["error"])
 	}
 }
 
