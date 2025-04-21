@@ -2,5 +2,6 @@
 	"$schema": "https://jsr.io/schema/config-file.v1.json",
 	"name": "@wsx/shared",
 	"version": "${version}",
+	"license": "${license}",
 	"exports": "./src/index.ts"
 }

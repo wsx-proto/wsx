@@ -1,5 +1,6 @@
 {
   "name": "wsx",
+	"license": "WTFPL",
   "version": "0.0.16",
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
