@@ -1,6 +1,6 @@
 {
   "name": "tests",
-	"private": true,
+  "private": true,
   "module": "src/index.ts",
   "type": "module",
   "devDependencies": {
@@ -9,11 +9,11 @@
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
-	"dependencies": {
-		"@wsx/server": "workspace:*",
-		"@sinclair/typebox": "0.32.31",
-		"@typeschema/typebox": "^0.13.4",
-		"@wsx/client": "workspace:*",
-		"@faker-js/faker": "^8.4.1"
-	}
+  "dependencies": {
+    "@faker-js/faker": "^9.7.0",
+    "@sinclair/typebox": "0.32.31",
+    "@typeschema/typebox": "^0.14.0",
+    "@wsx/client": "workspace:*",
+    "@wsx/server": "workspace:*"
+  }
 }

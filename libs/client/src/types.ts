@@ -69,4 +69,4 @@ export interface ClientConfig {
 /**
  * Wsx client WebSocket
  */
-export type ClientWs = Pick<WebSocket, "url" | "close" | "terminate">
+export type ClientWs = Pick<WebSocket, "url" | "close">

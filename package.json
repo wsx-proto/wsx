@@ -1,17 +1,22 @@
 {
   "name": "wsx",
   "private": true,
-	"version": "0.0.15",
-  "workspaces": ["examples/*", "libs/*"],
+  "version": "0.0.15",
+  "workspaces": [
+    "examples/*",
+    "libs/*"
+  ],
+  "scripts": {
+    "taze": "bunx taze -r"
+  },
   "devDependencies": {
-    "@biomejs/biome": "^1.7.3",
-    "@evilmartians/lefthook": "^1.6.13",
-    "npm-check-updates": "^16.14.20",
+    "@biomejs/biome": "^1.9.4",
+    "@evilmartians/lefthook": "^1.11.11",
     "nx": "19.1.0"
   },
-	"trustedDependencies": [
-		"@biomejs/biome",
-		"@evilmartians/lefthook",
-		"nx"
-	]
+  "trustedDependencies": [
+    "@biomejs/biome",
+    "@evilmartians/lefthook",
+    "nx"
+  ]
 }

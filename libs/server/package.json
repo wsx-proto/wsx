@@ -9,9 +9,9 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@typeschema/main": "^0.13.9",
+    "@typeschema/main": "^0.14.1",
     "@wsx/shared": "workspace:*",
-    "ioredis": "^5.4.1"
+    "ioredis": "^5.6.1"
   },
   "dependenciesMeta": {
     "@typeschema/main": {

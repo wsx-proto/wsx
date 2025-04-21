@@ -1,14 +1,14 @@
 {
   "name": "@wsx/client",
   "type": "module",
-	"exports": {
-		"default": "./src/index.ts"
-	},
-	"dependencies": {
-		"@wsx/shared": "workspace:*"
-	},
+  "exports": {
+    "default": "./src/index.ts"
+  },
+  "dependencies": {
+    "@wsx/shared": "workspace:*"
+  },
   "devDependencies": {
-		"@wsx/server": "workspace:*"
+    "@wsx/server": "workspace:*"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"

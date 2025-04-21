@@ -1,6 +1,0 @@
-{
-	"install": "always",
-	"interactive": true,
-	"workspaces": true,
-	"root": true
-}
