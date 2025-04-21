@@ -1,4 +1,5 @@
 {
+	"$schema": "https://jsr.io/schema/config-file.v1.json",
 	"name": "@wsx/server",
 	"version": "${version}",
 	"exports": "./src/index.ts",
