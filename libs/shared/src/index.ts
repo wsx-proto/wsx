@@ -1,8 +1,9 @@
+import type { StandardSchemaV1 } from "@standard-schema/spec"
 import type { MaybePromise } from "./utility-types"
 
 export * from "./utility-types"
 export * as Proto from "./proto"
-import type { Schema as AnySchema } from "@typeschema/main"
+export * from "./standard-schema"
 
 export type RPCHandler<
 	Request extends { body: any; ws: any } = { body: unknown; ws: unknown },
@@ -15,8 +16,8 @@ export type ServerRpcHandler = RPCHandler<
 >
 
 export type RPCOptions = {
-	body?: AnySchema
-	response?: AnySchema
+	body?: StandardSchemaV1
+	response?: StandardSchemaV1
 }
 
 export type RpcResponse<Response = unknown> =

@@ -1,7 +1,7 @@
 Server for Wsx framework. RPC, Pub/Sub, routing and end-to-end typesafety for WebSockets
 ```ts
 import { Wsx } from "@wsx/server"
-import { Type } from "@sinclair/typebox"
+import { z } from "zod"
 import { db } from "./db" // your database service
 
 export const app = new Wsx()
@@ -12,8 +12,8 @@ export const app = new Wsx()
 		return id
 	},
 	{
-		body: Type.Object({ email: Type.String() }),
-		response: Type.Number(),
+		body: z.object({ email: z.string() }),
+		response: z.number().int(),
 	},
 	)
 	.listen(3000)
@@ -21,5 +21,5 @@ export const app = new Wsx()
 
 [More examples](https://github.com/MeowningMaster/wsx/tree/main/examples)
 
-> [!IMPORTANT]  
-> Don't forget to install [TypeSchema adapter](https://typeschema.com/) for your validator
+> [!TIP]  
+> Supports [Standard Schema](https://github.com/standard-schema/standard-schema) validators

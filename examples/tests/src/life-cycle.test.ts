@@ -1,6 +1,7 @@
 import { beforeAll, expect, mock, test } from "bun:test"
 import { faker } from "@faker-js/faker"
 import { Type } from "@sinclair/typebox"
+import { Compile } from "@sinclair/typemap"
 import { Client, type ClientType } from "@wsx/client"
 import { Wsx } from "@wsx/server"
 
@@ -20,8 +21,8 @@ const Server = () =>
 		.onResponse((_, response) => onResponse(response))
 		.onError((_, error) => onError(error))
 		.route("/success", () => serverMessage, {
-			body: Type.String(),
-			response: Type.String(),
+			body: Compile(Type.String()),
+			response: Compile(Type.String()),
 		})
 		.route("/fail", () => {
 			throw serverMessage

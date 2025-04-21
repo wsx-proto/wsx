@@ -11,9 +11,10 @@
   },
   "dependencies": {
     "@faker-js/faker": "^9.7.0",
-    "@sinclair/typebox": "0.32.31",
-    "@typeschema/typebox": "^0.14.0",
+    "@sinclair/typebox": "^0.34.33",
+    "@sinclair/typemap": "^0.9.1",
     "@wsx/client": "workspace:*",
-    "@wsx/server": "workspace:*"
+    "@wsx/server": "workspace:*",
+    "zod": "^3.24.3"
   }
 }

@@ -2,15 +2,10 @@
   "name": "@wsx/shared",
   "type": "module",
   "exports": "./src/index.ts",
-  "dependencies": {
-    "@typeschema/main": "^0.14.1"
-  },
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
-  "dependenciesMeta": {
-    "@typeschema/main": {
-      "injected": true
-    }
+  "dependencies": {
+    "@standard-schema/spec": "^1.0.0"
   }
 }

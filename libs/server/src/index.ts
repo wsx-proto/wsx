@@ -1,8 +1,4 @@
-import {
-	type Schema as AnySchema,
-	type Infer,
-	validate,
-} from "@typeschema/main"
+import { type StandardSchemaV1, standardValidate } from "@wsx/shared"
 import {
 	type MaybePromise,
 	Proto,
@@ -107,8 +103,11 @@ export class WsxHandler implements WebSocketHandler {
 
 			const { body: bodySchema } = route
 			if (bodySchema) {
-				const validationResult = await validate(bodySchema, body)
-				if (!validationResult.success) {
+				let validationResult = standardValidate(bodySchema, body)
+				if (validationResult instanceof Promise) {
+					validationResult = await validationResult
+				}
+				if (validationResult.issues) {
 					// console.debug("Validation failed", validationResult.issues)
 					if (isRpcRequest) {
 						ws[socketSymbols.send]([
@@ -263,11 +262,11 @@ export class Wsx<
 	route<
 		const Path extends string,
 		Options extends RPCOptions,
-		Body extends Options["body"] extends AnySchema
-			? Infer<Options["body"]>
+		Body extends Options["body"] extends StandardSchemaV1
+			? StandardSchemaV1.InferOutput<Options["body"]>
 			: unknown,
-		Response extends Options["response"] extends AnySchema
-			? Infer<Options["response"]>
+		Response extends Options["response"] extends StandardSchemaV1
+			? StandardSchemaV1.InferOutput<Options["response"]>
 			: unknown,
 		Typing = PrepareTyping<
 			`${Prefix}${Path extends "/" ? "/index" : Path}`,
@@ -301,11 +300,11 @@ export class Wsx<
 	event<
 		const Path extends string,
 		Options extends RPCOptions,
-		Body extends Options["body"] extends AnySchema
-			? Infer<Options["body"]>
+		Body extends Options["body"] extends StandardSchemaV1
+			? StandardSchemaV1.InferOutput<Options["body"]>
 			: unknown,
-		Response extends Options["response"] extends AnySchema
-			? Infer<Options["response"]>
+		Response extends Options["response"] extends StandardSchemaV1
+			? StandardSchemaV1.InferOutput<Options["response"]>
 			: unknown,
 		Typing = PrepareTyping<
 			`${Prefix}${Path extends "/" ? "/index" : Path}`,

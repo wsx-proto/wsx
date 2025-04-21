@@ -1,6 +1,7 @@
 import { beforeAll, expect, mock, test } from "bun:test"
 import { faker } from "@faker-js/faker"
 import { Type } from "@sinclair/typebox"
+import { Compile } from "@sinclair/typemap"
 import { Client } from "@wsx/client"
 import { Localcast, type Topic, Wsx } from "@wsx/server"
 
@@ -12,7 +13,7 @@ let topic: Topic
 type Server = ReturnType<typeof Server>
 const Server = () =>
 	new Wsx()
-		.event("/rec", { body: Type.String() })
+		.event("/rec", { body: Compile(Type.String()) })
 		.route("/sub", ({ ws }) => {
 			topic.subscribe(ws)
 		})
@@ -21,7 +22,7 @@ const Server = () =>
 			({ body: message, events }) => {
 				events.rec.emit(message, { topic })
 			},
-			{ body: Type.String() },
+			{ body: Compile(Type.String()) },
 		)
 		.listen(0)
 

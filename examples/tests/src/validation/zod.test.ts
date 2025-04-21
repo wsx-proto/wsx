@@ -1,18 +1,18 @@
 import { beforeAll, expect, test } from "bun:test"
 import { faker } from "@faker-js/faker"
-import { type Static, Type } from "@sinclair/typebox"
 import { Client, type ClientType } from "@wsx/client"
 import { Wsx } from "@wsx/server"
+import { z } from "zod"
 
-type ValidBody = Static<typeof ValidBody>
-const ValidBody = Type.Object({ message: Type.String() })
+type ValidBody = z.infer<typeof ValidBody>
+const ValidBody = z.object({ message: z.string() })
 
 type Server = ReturnType<typeof Server>
 const Server = () =>
 	new Wsx()
 		.route("/validate", ({ body }) => body, {
 			body: ValidBody,
-			response: Type.Object({ message: Type.String() }),
+			response: z.object({ message: z.string() }),
 		})
 		.listen(0)
 
@@ -35,7 +35,8 @@ test("valid", async () => {
 
 test("invalid", async () => {
 	const response = await routes.validate.call({
-		message: 5 as any,
+		// @ts-expect-error
+		message: 5,
 	})
 	expect(response.status).toBe("fail")
 	expect((response as { message: string }).message).toBe("Validation failed")

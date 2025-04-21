@@ -1,4 +1,5 @@
 import { Type } from "@sinclair/typebox"
+import { Compile } from "@sinclair/typemap"
 import { Client } from "@wsx/client"
 import { Wsx } from "@wsx/server"
 
@@ -12,7 +13,7 @@ const plugin = new Wsx({ prefix: "/other" })
 	.route("/hi", () => {
 		console.log("hi plugin")
 	})
-	.event("/hi", { body: Type.Object({ message: Type.String() }) })
+	.event("/hi", { body: Compile(Type.Object({ message: Type.String() })) })
 
 const port = 3000
 export const app = new Wsx()
@@ -23,17 +24,17 @@ export const app = new Wsx()
 			return ws.id
 		},
 		{
-			body: Type.Object({ name: Type.String() }),
-			response: Type.String(),
+			body: Compile(Type.Object({ name: Type.String() })),
+			response: Compile(Type.String()),
 		},
 	)
 	.use(plugin)
 	.route("/user/get", ({ body: { id } }) => console.log(id), {
-		body: Type.Object({ id: Type.String() }),
+		body: Compile(Type.Object({ id: Type.String() })),
 	})
 	.event("/user/pong", {
-		body: Type.Object({ message: Type.String() }),
-		response: Type.String(),
+		body: Compile(Type.Object({ message: Type.String() })),
+		response: Compile(Type.String()),
 	})
 	.route("/user/ping", async ({ ws, events }) => {
 		console.log("server ping", ws.id)

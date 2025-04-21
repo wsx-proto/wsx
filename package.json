@@ -1,22 +1,22 @@
 {
   "name": "wsx",
-  "private": true,
   "version": "0.0.15",
-  "workspaces": [
-    "examples/*",
-    "libs/*"
-  ],
-  "scripts": {
-    "taze": "bunx taze -r"
-  },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@evilmartians/lefthook": "^1.11.11",
     "nx": "19.1.0"
   },
+  "private": true,
+  "scripts": {
+    "taze": "bunx taze -r"
+  },
   "trustedDependencies": [
     "@biomejs/biome",
     "@evilmartians/lefthook",
     "nx"
+  ],
+  "workspaces": [
+    "examples/*",
+    "libs/*"
   ]
 }

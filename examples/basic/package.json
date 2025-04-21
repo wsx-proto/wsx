@@ -10,8 +10,8 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@sinclair/typebox": "0.32.31",
-    "@typeschema/typebox": "^0.14.0",
+    "@sinclair/typebox": "^0.34.30",
+    "@sinclair/typemap": "^0.9.1",
     "@wsx/client": "workspace:*",
     "@wsx/server": "workspace:*"
   }

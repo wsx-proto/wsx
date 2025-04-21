@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, mock, test } from "bun:test"
 import { faker } from "@faker-js/faker"
 import { Type } from "@sinclair/typebox"
+import { Compile } from "@sinclair/typemap"
 import { Client } from "@wsx/client"
 import { Rediscast, type Topic, Wsx } from "@wsx/server"
 
@@ -18,7 +19,7 @@ describe.skipIf(!Bun.env.REDIS_HOST)("Rediscast", () => {
 	type Server = ReturnType<typeof Server>
 	const Server = (topic: Topic) =>
 		new Wsx()
-			.event("/rec", { body: Type.String() })
+			.event("/rec", { body: Compile(Type.String()) })
 			.route("/sub", ({ ws }) => {
 				topic.subscribe(ws)
 			})
@@ -27,7 +28,7 @@ describe.skipIf(!Bun.env.REDIS_HOST)("Rediscast", () => {
 				({ body: message, events }) => {
 					events.rec.emit(message, { topic })
 				},
-				{ body: Type.String() },
+				{ body: Compile(Type.String()) },
 			)
 			.listen(0)
 

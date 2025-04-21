@@ -9,13 +9,7 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@typeschema/main": "^0.14.1",
     "@wsx/shared": "workspace:*",
     "ioredis": "^5.6.1"
-  },
-  "dependenciesMeta": {
-    "@typeschema/main": {
-      "injected": true
-    }
   }
 }
