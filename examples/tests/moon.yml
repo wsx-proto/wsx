@@ -1,0 +1,10 @@
+id: tests
+language: typescript
+type: application
+tasks:
+  dev:
+    command: bun --watch --inspect-wait=ws://localhost:6499/wsx-example src/index.ts
+  start:
+    command: bun src/index.ts
+  test:
+    command: bun test

@@ -1,0 +1,6 @@
+projects:
+  - libs/*
+  - examples/*
+vcs:
+  defaultBranch: main
+  manager: git

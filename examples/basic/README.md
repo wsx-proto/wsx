@@ -2,5 +2,5 @@
 
 ```sh
 bun install
-bun nx run basic:start
+bun moon basic:start
 ```

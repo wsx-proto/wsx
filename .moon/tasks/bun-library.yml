@@ -1,0 +1,4 @@
+tasks:
+  publish:
+    command: bunx jsr publish --allow-dirty
+    toolchain: system

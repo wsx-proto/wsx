@@ -1,11 +1,10 @@
 {
   "name": "wsx",
-	"license": "WTFPL",
+  "license": "WTFPL",
   "version": "0.0.16",
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
-    "@evilmartians/lefthook": "^1.11.11",
-    "nx": "19.1.0"
+    "@evilmartians/lefthook": "^1.11.11"
   },
   "private": true,
   "scripts": {
@@ -14,7 +13,7 @@
   "trustedDependencies": [
     "@biomejs/biome",
     "@evilmartians/lefthook",
-    "nx"
+    "@moonrepo/cli"
   ],
   "workspaces": [
     "examples/*",

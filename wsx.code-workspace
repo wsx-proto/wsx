@@ -30,6 +30,10 @@
 		"editor.codeActionsOnSave": {
 			"quickfix.biome": "explicit"
 		},
+		"yaml.schemas": {
+			"https://moonrepo.dev/schemas/toolchain.json": "/.moon/toolchain.yml",
+			"https://moonrepo.dev/schemas/workspace.json": "/.moon/workspace.yml"
+		},
 		// imports
 		"javascript.updateImportsOnFileMove.enabled": "always",
 		"typescript.updateImportsOnFileMove.enabled": "always",

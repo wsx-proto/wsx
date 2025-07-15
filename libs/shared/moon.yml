@@ -1,0 +1,7 @@
+id: shared
+language: typescript
+tasks:
+  check: {}
+  publish: {}
+  types: {}
+type: library

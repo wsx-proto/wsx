@@ -1,0 +1,5 @@
+id: client
+language: typescript
+type: library
+tasks:
+  publish: { deps: ["shared:publish", "server:publish"] }
