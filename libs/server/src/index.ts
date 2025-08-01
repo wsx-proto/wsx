@@ -207,8 +207,8 @@ export class WsxHandler implements WebSocketHandler {
  */
 export class Wsx<
 	const in out Prefix extends string = "",
-	const out Routes extends RoutesBase = Record<string, never>,
-	const out Events extends EventBase = Record<string, never>,
+	const out Routes extends RoutesBase = {},
+	const out Events extends EventBase = {},
 > {
 	prefix: Prefix
 	router: Map<string, RPCRoute<ServerRpcHandler>> = new Map()

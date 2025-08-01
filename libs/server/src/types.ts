@@ -45,7 +45,7 @@ export type SendOptions = CallOptions | EmitOptions
 
 export type PrepareTyping<
 	Path extends string,
-	Property extends Record<string, unknown> = Record<string, never>,
+	Property extends Record<string, unknown> = {},
 > = Path extends `/${infer Rest}`
 	? _PrepareTyping<Rest, Property>
 	: Path extends ""
@@ -54,7 +54,7 @@ export type PrepareTyping<
 
 type _PrepareTyping<
 	Path extends string,
-	Property extends Record<string, unknown> = Record<string, never>,
+	Property extends Record<string, unknown> = {},
 > = Path extends `${infer Start}/${infer Rest}`
 	? {
 			[x in Start]: _PrepareTyping<Rest, Property>
@@ -65,7 +65,7 @@ type _PrepareTyping<
 
 export type AppendTypingPrefix<
 	Prefix extends string,
-	Typing extends Record<string, unknown> = Record<string, never>,
+	Typing extends Record<string, unknown> = {},
 > = Prefix extends ""
 	? Typing
 	: {
