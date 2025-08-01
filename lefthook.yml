@@ -2,6 +2,5 @@ pre-commit:
   commands:
     check:
       glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
-      run: bun biome check --apply --no-errors-on-unmatched --files-ignore-unknown=true --diagnostic-level=warn {staged_files}
-    update-index:
-      run: git update-index --again
+      run: bun --bun biome check --write --no-errors-on-unmatched --colors=off --diagnostic-level=warn {staged_files}
+      stage_fixed: true

@@ -5,15 +5,15 @@
 			"path": "./"
 		},
 		{
-			"name": "@wsx/server",
+			"name": "server",
 			"path": "libs/server"
 		},
 		{
-			"name": "@wsx/client",
+			"name": "client",
 			"path": "libs/client"
 		},
 		{
-			"name": "@wsx/shared",
+			"name": "shared",
 			"path": "libs/shared"
 		},
 		{

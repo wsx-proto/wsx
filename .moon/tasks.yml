@@ -1,9 +1,5 @@
 tasks:
   check:
-    command: biome check {projectRoot}/src --write --colors=force --diagnostic-level=warn
-    options:
-      runFromWorkspaceRoot: true
-    toolchain: bun
+    command: biome check src --colors=force --diagnostic-level=warn
   types:
-    command: tsc --noEmit --pretty
-    toolchain: bun
+    command: tsc --pretty

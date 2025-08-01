@@ -1,4 +1,3 @@
 tasks:
   publish:
-    command: bunx jsr publish --allow-dirty
-    toolchain: system
+    command: bunx jsr publish --allow-dirty --dry-run
