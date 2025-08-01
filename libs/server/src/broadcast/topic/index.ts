@@ -1,7 +1,8 @@
-import { type WsxSocket, socketSymbols } from "../../socket"
+import { socketSymbols, type WsxSocket } from "../../socket"
 import type { Broadcast } from "../broadcast"
 import * as symbols from "./symbols"
 export { symbols as topicSymbols }
+
 import * as broadcastSymbols from "../symbols"
 
 /**

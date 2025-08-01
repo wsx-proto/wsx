@@ -1,9 +1,9 @@
 import type { StandardSchemaV1 } from "@standard-schema/spec"
 import type { MaybePromise } from "./utility-types"
 
-export * from "./utility-types"
 export * as Proto from "./proto"
 export * from "./standard-schema"
+export * from "./utility-types"
 
 export type RPCHandler<
 	Request extends { body: any; ws: any } = { body: unknown; ws: unknown },

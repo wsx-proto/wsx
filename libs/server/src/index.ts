@@ -1,17 +1,15 @@
-import { type StandardSchemaV1, standardValidate } from "@wsx/shared"
 import {
+	isObject,
+	isPromise,
 	type MaybePromise,
 	Proto,
 	type RPCHandler,
 	type RPCOptions,
 	type ServerRpcHandler,
-	isObject,
-	isPromise,
+	type StandardSchemaV1,
+	standardValidate,
 	subprotocol,
 } from "@wsx/shared"
-import { RoutingProxy, Store } from "./proxy"
-import type { AppendTypingPrefix, ConsumeTyping, PrepareTyping } from "./types"
-
 import type { Serve, Server, ServerWebSocket, WebSocketHandler } from "bun"
 import { topicSymbols } from "./broadcast"
 import {
@@ -21,9 +19,12 @@ import {
 	type OnRequest,
 	type OnResponse,
 } from "./life-cycle"
-import { WsxSocket, socketSymbols } from "./socket"
+import { RoutingProxy, Store } from "./proxy"
+import { socketSymbols, WsxSocket } from "./socket"
+import type { AppendTypingPrefix, ConsumeTyping, PrepareTyping } from "./types"
+
+export { Localcast, Rediscast, Topic } from "./broadcast"
 export { WsxSocket } from "./socket"
-export { Topic, Localcast, Rediscast } from "./broadcast"
 
 /**
  * Options for Wsx server
@@ -206,8 +207,8 @@ export class WsxHandler implements WebSocketHandler {
  */
 export class Wsx<
 	const in out Prefix extends string = "",
-	const out Routes extends RoutesBase = {},
-	const out Events extends EventBase = {},
+	const out Routes extends RoutesBase = Record<string, never>,
+	const out Events extends EventBase = Record<string, never>,
 > {
 	prefix: Prefix
 	router: Map<string, RPCRoute<ServerRpcHandler>> = new Map()

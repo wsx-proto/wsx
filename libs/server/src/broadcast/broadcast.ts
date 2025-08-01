@@ -1,5 +1,5 @@
 import type { MaybePromise } from "@wsx/shared"
-import { type WsxSocket, socketSymbols } from "../socket"
+import { socketSymbols, type WsxSocket } from "../socket"
 import * as symbols from "./symbols"
 import { Topic } from "./topic"
 export { symbols as broadcastSymbols }

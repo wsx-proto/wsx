@@ -1,12 +1,13 @@
 import type { Wsx } from "@wsx/server"
 import type { ClientConfig, ClientType } from "./types"
-export type { ClientType, ClientConfig, ClientWs } from "./types"
+
+export type { ClientConfig, ClientType, ClientWs } from "./types"
 
 import {
+	isPromise,
 	Proto,
 	type RPCHandler,
 	type RpcResponse,
-	isPromise,
 	subprotocol,
 } from "@wsx/shared"
 
@@ -48,7 +49,7 @@ const RoutingProxy = (
 				param === "index" ? paths : [...paths, param],
 			)
 		},
-		apply(_, __, [body, options]) {
+		apply(_, __, [body, _options]) {
 			const methodPaths = [...paths]
 			const method = methodPaths.pop() as Method
 			const path = `/${methodPaths.join("/")}`

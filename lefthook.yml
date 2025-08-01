@@ -2,5 +2,6 @@ pre-commit:
   commands:
     check:
       glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
+      # todo: consider calling `moon :check` when using multifile lints
       run: bun --bun biome check --write --no-errors-on-unmatched --colors=off --diagnostic-level=warn {staged_files}
       stage_fixed: true

@@ -1,7 +1,7 @@
 import { Proto } from "@wsx/shared"
 import type { AnyWsx } from "."
 import { topicSymbols } from "./broadcast"
-import { type WsxSocket, socketSymbols } from "./socket"
+import { socketSymbols, type WsxSocket } from "./socket"
 import type { SendOptions } from "./types"
 
 type Method = (typeof methods)[number]
@@ -65,7 +65,7 @@ export const RoutingProxy = (
 			}
 
 			if (method === "emit") {
-				const id = wsx.store.id++
+				wsx.store.id++
 				const action: Proto.Emit = [Proto.actionTypes.emit, path, body]
 
 				if (!options) {

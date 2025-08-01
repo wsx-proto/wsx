@@ -49,7 +49,6 @@ console.info("Server started", { port })
 
 const {
 	routes: { user, other },
-	raw,
 } = await Client<typeof app>(`localhost:${port}`)
 
 other.hi.emit()
